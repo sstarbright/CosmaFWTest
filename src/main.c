@@ -2,11 +2,13 @@
 #include <SDL2/SDL.h>
 #include <windows.h>
 #endif
+
 #ifdef LINUX
 #include <SDL2/SDL.h>
 #else
 #include <SDL2/SDL.h>
 #endif
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -50,8 +52,10 @@ int Shutdown(int exitCode) {
     mainWindow = NULL;
     SDL_Quit();
 }
+
 #ifdef WINDOWS
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow) {
+    // Transforms pCmdLine into a list of arguments and argumentCount
     int argumentLength = wcslen(pCmdLine);
     char argString[argumentLength];
     wcstombs(argString, pCmdLine, argumentLength);

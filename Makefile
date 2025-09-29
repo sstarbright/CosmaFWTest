@@ -9,6 +9,7 @@ LINKER_FLAGS = -lSDL2
 
 LINUX_OUT = build/linux/cosmafwtest
 WINDOWS_OUT = build/windows/cosmafwtest.exe
+
 all : $(SRC)
 	$(LINUX_COMPILER) $(SRC) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(LINUX_OUT) -DLINUX=1
 	$(WINDOWS_COMPILER) $(SRC) $(COMPILER_FLAGS) $(WINDOWS_COMPILER_FLAGS) $(LINKER_FLAGS) -o $(WINDOWS_OUT) -DWINDOWS=1 -municode
