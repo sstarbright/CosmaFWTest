@@ -1,4 +1,1 @@
-build/linux/*
-build/windows/*
-!build/linux/linux_exe_here
-!build/windows/windows_exe_and_dll_here
+build/*
