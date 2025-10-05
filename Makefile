@@ -27,6 +27,7 @@ $(CFW_OBJ): $(CFW_SRC)
 	@mkdir -p build/linux/obj/CosmaFW
 	@$(LINUX_COMPILER) -c $(CFW_SRC) $(COMPILER_FLAGS) -o $(CFW_OBJ)
 
+#builds the CosmaFW static library
 libcfw.a: $(CFW_OBJ)
 	@mkdir -p build/linux/static
 	@ar rcs build/linux/static/libcfw.a $(CFW_OBJ)
