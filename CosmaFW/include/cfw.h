@@ -2,7 +2,7 @@
 #define CFW_SDL_H
 
 #ifdef _WIN32
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <windows.h>
 #else
 #include <SDL2/SDL.h>
@@ -37,8 +37,9 @@ void CFW_OnUpdate(SDL_Event *event);
 // Must be defined by user
 void CFW_OnEnd(int exitCode);
 
-// Creates an SDL Window
+// Creates an SDL Window and adds it to a linked list
 // Prints a message box on Window failure
+// Don't worry about killing windows when "CFW_End()"ing your game
 CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 flags);
 // Kills an SDL Window
 // Removes it from CFW's window linked list, destroys the SDL Window, and frees itself
