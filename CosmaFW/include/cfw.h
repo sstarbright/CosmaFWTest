@@ -2,20 +2,47 @@
 #define CFW_SDL_H
 
 #ifdef _WIN32
-#include <SDL2/SDL.h>
 #include <windows.h>
-#else
-#include <SDL2/SDL.h>
 #endif
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include <stdbool.h>
 #include <stdio.h>
 typedef struct CFW_Window CFW_Window;
+typedef struct CFW_Texture CFW_Texture;
+typedef struct CFW_AnimTexture CFW_AnimTexture;
+typedef struct CFW_AngleTexture CFW_AngleTexture;
+typedef struct CFW_AnimAngleTexture CFW_AnimAngleTexture;
 
 struct CFW_Window {
     SDL_Window* window;
+    SDL_Surface* surface;
+    SDL_Renderer* renderer;
     CFW_Window* next;
     CFW_Window* prev;
+};
+
+struct CFW_Texture {
+    SDL_Texture* texture;
+    SDL_Surface* surface;
+    int owners;
+};
+struct CFW_AnimTexture {
+    CFW_Texture* frameSlots;
+    int frameCount;
+    float* frameTimings;
+};
+struct CFW_AngleTexture {
+    CFW_Texture* angleSlots;
+    int angleCount;
+};
+struct CFW_AnimAngleTexture {
+    CFW_Texture** frameSlots;
+    int frameCount;
+    int angleCount;
+    float* frameTimings;
 };
 
 // Initializes CosmaFW
@@ -25,6 +52,7 @@ bool CFW_Init();
 int CFW_Kill(int exitCode);
 // Calls the OnEnd function and kills CFW
 int CFW_End(int exitCode);
+
 
 // Function that gets called when CFW starts up
 // Must be defined by user
@@ -37,6 +65,7 @@ void CFW_OnUpdate(SDL_Event *event);
 // Must be defined by user
 void CFW_OnEnd(int exitCode);
 
+
 // Creates an SDL Window and adds it to a linked list
 // Prints a message box on Window failure
 // Don't worry about killing windows when "CFW_End()"ing your game
@@ -44,5 +73,21 @@ CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int wi
 // Kills an SDL Window
 // Removes it from CFW's window linked list, destroys the SDL Window, and frees itself
 void CFW_KillWindow(CFW_Window* window);
+
+
+// Creates an SDL Surface that can be automatically loaded/unloaded in VRAM on command
+CFW_Texture* CFW_CreateTexture(const char* path);
+void CFW_DestroyTexture(CFW_Texture* texture, bool allocated);
+void CFW_ReqTexture(CFW_Texture* texture);
+void CFW_UnreqTexture(CFW_Texture* texture);
+
+CFW_AnimTexture* CFW_CreateAnimTexture(const char* imagePath, const char* framePath);
+void CFW_DestroyAnimTexture(CFW_AnimTexture* texture);
+
+CFW_AngleTexture* CFW_CreateAngleTexture(const char* path, int angleCount);
+void CFW_DestroyAngleTexture(CFW_AngleTexture* texture);
+
+CFW_AnimAngleTexture* CFW_CreateAnimAngleTexture(const char* imagePath, const char* framePath, int angleCount);
+void CFW_DestroyAnimAngleTexture(CFW_AnimAngleTexture* texture);
 
 #endif

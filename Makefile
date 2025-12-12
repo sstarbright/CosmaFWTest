@@ -13,8 +13,10 @@ WINDOWS_COMPILER = x86_64-w64-mingw32-gcc
 COMPILER_FLAGS = -w
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 
-LINUX_OUT = build/linux/cosmafwtest
-WINDOWS_OUT = build/windows/cosmafwtest.exe
+OUT_NAME = terracon
+LINUX_OUT = build/linux/$(OUT_NAME)
+WINDOWS_OUT = build/windows/$(OUT_NAME).exe
+RUN_OUT = $(LINUX_OUT)
 
 main_out: main_linux_out main_windows_out
 
@@ -27,6 +29,9 @@ main_windows_out: libcfw.lib $(MAIN_WINDOWS_OBJ)
 	@mkdir -p build/windows
 	@$(WINDOWS_COMPILER) $(CFW_WINDOWS_OBJ) $(MAIN_WINDOWS_OBJ) $(COMPILER_FLAGS) -Lbuild/windows/static $(LINKER_FLAGS) -lcfw -o $(WINDOWS_OUT)
 	@cp /usr/x86_64-w64-mingw32/bin/SDL2.dll build/windows/SDL2.dll
+	@cp /usr/x86_64-w64-mingw32/bin/SDL2_image.dll build/windows/SDL2_image.dll
+	@cp /usr/x86_64-w64-mingw32/bin/SDL2_mixer.dll build/windows/SDL2_mixer.dll
+	@cp /usr/x86_64-w64-mingw32/bin/SDL2_ttf.dll build/windows/SDL2_ttf.dll
 
 
 # builds the main executable's objects
@@ -57,6 +62,10 @@ libcfw.a: $(CFW_LINUX_OBJ)
 libcfw.lib: $(CFW_WINDOWS_OBJ)
 	@mkdir -p build/windows/static
 	@ar rcs build/windows/static/libcfw.lib $(CFW_WINDOWS_OBJ)
+
+
+run: main_out
+	@$(LINUX_OUT)
 
 
 clean:

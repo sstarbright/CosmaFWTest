@@ -7,6 +7,7 @@
 2. Download the latest SDL2-devel-2.XX.XX-mingw.tar.gz from [here](https://github.com/libsdl-org/SDL/releases)
 3. Extract and merge the x86_64-w64-mingw32 folder into /usr
 4. Copy SDL2.dll from /usr/x86_64-w64-mingw32/bin to build/windows to allow for testing the Windows build
+5. If compiling with SDL2 Extensions, repeat all of these for SDL_image, SDL_mixer, and SDL_ttf
 
 
 ## To Run
