@@ -113,13 +113,13 @@ CFW_Texture* CFW_CreateTexture(const char* path) {
     }
     return NULL;
 }
-void CFW_DestroyTexture(CFW_Texture* texture, bool allocated) {
+void CFW_DestroyTexture(CFW_Texture* texture, bool individual) {
     if (texture) {
         if (texture->surface)
             SDL_FreeSurface(texture->surface);
         if (texture->texture)
             SDL_DestroyTexture(texture->texture);
-        if (allocated)
+        if (individual)
             free(texture);
     }
 }
@@ -362,7 +362,7 @@ void CFW_DestroyAnimAngleTexture(CFW_AnimAngleTexture* texture) {
         }
         free(texture->frameSlots[x]);
     }
-    
+
     free(texture->frameSlots);
     free(texture->frameTimings);
     free(texture);
