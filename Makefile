@@ -11,7 +11,7 @@ LINUX_COMPILER = gcc
 WINDOWS_COMPILER = x86_64-w64-mingw32-gcc
 #-w suppresses warnings
 COMPILER_FLAGS = -w
-LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+LINKER_FLAGS = -lm -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 
 OUT_NAME = terracon
 LINUX_OUT = build/linux/$(OUT_NAME)
@@ -69,4 +69,4 @@ run: main_out
 
 
 clean:
-	@rm -r build
+	@rm -rf build
