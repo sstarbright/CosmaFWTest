@@ -1,14 +1,19 @@
 #include "../include/render.h"
 
+#define LIGHT_SCALE 5.f
+
 Vector2i* renderMapSize;
 Vector2i screenResolution = (Vector2i){.x = 256, .y = 224};
 SDL_Surface* renderSurface;
+SDL_Surface* lightingSurface;
 
 RayCamera* camera;
 
 void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
     renderMapSize = mapSizePointer;
     renderSurface = targetSurface;
+    lightingSurface = SDL_CreateRGBSurface(0, 256, 224, 32, 0, 0, 0, 0);
+    SDL_SetSurfaceBlendMode(lightingSurface, SDL_BLENDMODE_MUL);
 
     camera = malloc(sizeof(RayCamera));
     camera->cameraPosition = (Vector2){.x = 0.0f, .y = 0.0f};
@@ -17,6 +22,7 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
 }
 
 void TC_RenderGeo() {
+    SDL_FillRect(lightingSurface, NULL, SDL_MapRGB(renderSurface->format, 0x00, 0x00, 0x00));
     float dirX = camera->cameraDirection.x;
     float dirY = camera->cameraDirection.y;
     float planeX = camera->cameraPlane.x;
@@ -80,50 +86,54 @@ void TC_RenderGeo() {
         }
 
         perpWallDist = (side == 0) ? (sideDistX - deltaDistX) : (sideDistY - deltaDistY);
+            
+        SDL_Surface* targetTexture = TC_GetMapTexture(TC_GetMapTile(mapX, mapY));
+
+        float wallX;
+        if (side == 0)
+            wallX = posY + perpWallDist * rayDirY;
+        else
+            wallX = posX + perpWallDist * rayDirX;
+        wallX -= floor(wallX);
+
+        //x coordinate on the texture
+        int textureX = (int)(wallX * (float)targetTexture->w);
+        if(side == 0 && rayDirX > 0)
+            textureX = targetTexture->w - textureX - 1;
+        if(side == 1 && rayDirY < 0)
+            textureX = targetTexture->w - textureX - 1;
 
         int lineHeight = (int)(screenHeight/perpWallDist);
 
+        float scaleRatio = (float)targetTexture->h/(float)lineHeight;
+
         int drawStart = -lineHeight/2+screenHeight/2;
-        if (drawStart < 0)
+        int fetchStart = 0;
+        if (drawStart < 0) {
+            fetchStart = -drawStart * scaleRatio;
             drawStart = 0;
-        int drawEnd = lineHeight/2+screenHeight/2;
-        if (drawEnd >= screenHeight)
-            drawEnd = screenHeight-1;
-        CFW_Color color;
-        switch(TC_GetMapTile(mapX, mapY)) {
-            case 1:
-                if (side == 0)
-                    color = (CFW_Color){.r = 0xFF, .g = 0x00, .b = 0x00};
-                else
-                    color = (CFW_Color){.r = 0x7F, .g = 0x00, .b = 0x00};
-                break;
-            case 2:
-                if (side == 0)
-                    color = (CFW_Color){.r = 0x00, .g = 0xFF, .b = 0x00};
-                else
-                    color = (CFW_Color){.r = 0x00, .g = 0x7F, .b = 0x00};
-                break;
-            case 3:
-                if (side == 0)
-                    color = (CFW_Color){.r = 0x00, .g = 0x00, .b = 0xFF};
-                else
-                    color = (CFW_Color){.r = 0x00, .g = 0x00, .b = 0x7F};
-                break;
-            case 4:
-                if (side == 0)
-                    color = (CFW_Color){.r = 0xFF, .g = 0xFF, .b = 0xFF};
-                else
-                    color = (CFW_Color){.r = 0x7F, .g = 0x7F, .b = 0x7F};
-                break;
-            default:
-                if (side == 0)
-                    color = (CFW_Color){.r = 0xFF, .g = 0x00, .b = 0xFF};
-                else
-                    color = (CFW_Color){.r = 0x7F, .g = 0x00, .b = 0x7F};
-                break;
         }
-        SDL_FillRect(renderSurface, &(SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart}, SDL_MapRGB(renderSurface->format, color.r, color.g, color.b));
+        int drawEnd = lineHeight/2+screenHeight/2;
+        int fetchEnd = targetTexture->h-1;
+        if (drawEnd >= screenHeight) {
+            fetchEnd = targetTexture->h-((drawEnd - screenHeight) * scaleRatio);
+            drawEnd = screenHeight-1;
+        }
+
+        SDL_Rect targetRect = (SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart};
+        
+        SDL_BlitScaled(targetTexture, &(SDL_Rect){.x = textureX, .y = fetchStart, .w = 1, .h = fetchEnd-fetchStart}, renderSurface, &targetRect);
+
+        float lightDistance = perpWallDist / LIGHT_SCALE;
+        if (lightDistance < 0)
+            lightDistance = 0;
+        else if (lightDistance > 1)
+            lightDistance = 1;
+        lightDistance = 1.f - lightDistance;
+
+        SDL_FillRect(lightingSurface, &targetRect, SDL_MapRGB(renderSurface->format, (int)(lightDistance*255), (int)(lightDistance*255), (int)(lightDistance*255)));
     }
+    SDL_BlitSurface(lightingSurface, NULL, renderSurface, NULL);
 }
 
 RayCamera* TC_GetCamera() {

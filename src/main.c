@@ -16,18 +16,20 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
     if (!gameSurface) {
         printf("NO GAME SURFACE!!!\n");
     }
+    TC_InitializeMap();
     TC_SetupRenderer(TC_GetMapSizePointer(), gameSurface);
     gameCamera = TC_GetCamera();
     if (!gameWindow)
         return false;
     
-    gamePlayer.position = (Vector2){.x = 22.0f, .y = 12.0f};
+    gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
+    gamePlayer.wallRadius = 0.1;
     
     return true;
 }
 
-void CFW_OnUpdate(float deltaTime) {
+void TC_UpdateJoy(float deltaTime) {
     float playerX = gamePlayer.position.x;
     float playerY = gamePlayer.position.y;
     float turnX = gamePlayer.direction.x;
@@ -39,18 +41,18 @@ void CFW_OnUpdate(float deltaTime) {
     float rotSpeed = deltaTime * 3.0;
     
     if(TC_KeyUp()) {
-        if(TC_GetMapTile((int)(playerX + turnX * moveSpeed),(int)(playerY)) == false) {
+        if(TC_GetMapTile((int)(playerX + turnX * moveSpeed + gamePlayer.wallRadius * turnX),(int)(playerY)) == false) {
             playerX += turnX * moveSpeed;
         }
-        if(TC_GetMapTile((int)(playerX),(int)(playerY + turnY * moveSpeed)) == false) {
+        if(TC_GetMapTile((int)(playerX),(int)(playerY + turnY * moveSpeed + gamePlayer.wallRadius * turnY)) == false) {
             playerY += turnY * moveSpeed;
         }
     }
     if (TC_KeyDown())
     {
-      if(TC_GetMapTile((int)(playerX - turnX * moveSpeed),(int)(playerY)) == false)
+      if(TC_GetMapTile((int)(playerX - turnX * moveSpeed - gamePlayer.wallRadius * turnX),(int)(playerY)) == false)
         playerX -= turnX * moveSpeed;
-      if(TC_GetMapTile((int)(playerX),(int)(playerY - turnY * moveSpeed)) == false)
+      if(TC_GetMapTile((int)(playerX),(int)(playerY - turnY * moveSpeed - gamePlayer.wallRadius * turnY)) == false)
         playerY -= turnY * moveSpeed;
     }
     if (TC_KeyRight())
@@ -82,17 +84,29 @@ void CFW_OnUpdate(float deltaTime) {
     gameCamera->cameraDirection.y = turnY;
     gameCamera->cameraPlane.x = planeX;
     gameCamera->cameraPlane.y = planeY;
+}
+
+void CFW_OnUpdate(float deltaTime) {
+    TC_UpdateJoy(deltaTime);
 
     // Draw Ceiling and Floor gradients here
-    SDL_FillRect(gameSurface, &(SDL_Rect){.x = 0, .y = 0, .w = 256, .h = 224}, SDL_MapRGB(gameSurface->format, 0x00, 0x00, 0x00));
-    TC_RenderGeo();
-    
-    SDL_BlitScaled(gameSurface, NULL, gameWindow->surface, &(SDL_Rect){.x = 0, .y = 0, .w = 1440, .h = 1080});
+    SDL_FillRect(gameSurface, NULL, SDL_MapRGB(gameSurface->format, 0x00, 0x00, 0x00));
 
+    // Draw Walls
+    TC_RenderGeo();
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+
+    SDL_GetWindowSizeInPixels(gameWindow->window, &windowWidth, &windowHeight);
+
+    // Update Window
+    SDL_BlitScaled(gameSurface, NULL, gameWindow->surface, &(SDL_Rect){.x = 0, .y = 0, .w = windowWidth, .h = windowHeight});
     SDL_UpdateWindowSurface(gameWindow->window);
 }
 
 void CFW_OnEnd(int exitCode) {
     SDL_FreeSurface(gameSurface);
+    TC_FreeMap();
     TC_CloseRenderer();
 }

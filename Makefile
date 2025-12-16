@@ -23,10 +23,12 @@ main_out: main_linux_out main_windows_out
 # builds the main executable
 main_linux_out: libcfw.a $(MAIN_LINUX_OBJ)
 	@mkdir -p build/linux
+	@cp -R assets build/linux/assets
 	@$(LINUX_COMPILER) $(CFW_LINUX_OBJ) $(MAIN_LINUX_OBJ) $(COMPILER_FLAGS) -Lbuild/linux/static $(LINKER_FLAGS) -lcfw -o $(LINUX_OUT)
 
 main_windows_out: libcfw.lib $(MAIN_WINDOWS_OBJ)
 	@mkdir -p build/windows
+	@cp -R assets build/windows/assets
 	@$(WINDOWS_COMPILER) $(CFW_WINDOWS_OBJ) $(MAIN_WINDOWS_OBJ) $(COMPILER_FLAGS) -Lbuild/windows/static $(LINKER_FLAGS) -lcfw -o $(WINDOWS_OUT)
 	@cp /usr/x86_64-w64-mingw32/bin/SDL2.dll build/windows/SDL2.dll
 	@cp /usr/x86_64-w64-mingw32/bin/SDL2_image.dll build/windows/SDL2_image.dll
@@ -66,7 +68,6 @@ libcfw.lib: $(CFW_WINDOWS_OBJ)
 
 run: main_out
 	@$(LINUX_OUT)
-
 
 clean:
 	@rm -rf build

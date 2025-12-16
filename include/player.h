@@ -8,6 +8,7 @@ typedef struct PlayerData PlayerData;
 struct PlayerData {
     Vector2 position;
     Vector2 direction;
+    float wallRadius;
 };
 
 #endif
