@@ -375,6 +375,10 @@ void CFW_DestroyAnimAngleTexture(CFW_AnimAngleTexture* texture) {
     free(texture);
 }
 
+float flerp(float from, float to, float weight) {
+    return from + (to - from) * weight;
+}
+
 int main(int argumentCount, char* arguments[]) {
     if (!CFW_Init() || !CFW_OnStart(argumentCount, arguments))
         return CFW_Kill(1);

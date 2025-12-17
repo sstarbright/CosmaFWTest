@@ -1,6 +1,7 @@
 #include "../include/render.h"
 
-#define LIGHT_SCALE 5.f
+#define FOG_THICKNESS 4.f
+#define HEIGHT_OFFSET 8
 
 Vector2i* renderMapSize;
 Vector2i screenResolution = (Vector2i){.x = 256, .y = 224};
@@ -33,6 +34,7 @@ void TC_RenderGeo() {
     int screenHeight = screenResolution.y;
     float screenWidthF = screenResolution.x;
     float screenHeightF = screenResolution.y;
+    
     for (int x = 0; x < screenWidth; x++) {
         float cameraX = 2 * x / ((float)screenWidth) - 1;
 
@@ -98,22 +100,39 @@ void TC_RenderGeo() {
 
         //x coordinate on the texture
         int textureX = (int)(wallX * (float)targetTexture->w);
-        if(side == 0 && rayDirX > 0)
-            textureX = targetTexture->w - textureX - 1;
-        if(side == 1 && rayDirY < 0)
-            textureX = targetTexture->w - textureX - 1;
+        int face = 0;
+        if(side == 0) {
+            if (rayDirX > 0) {
+                textureX = targetTexture->w - textureX - 1;
+                // North
+                face = 0;
+            } else {
+                // South
+                face = 2;
+            }
+        }
+        else if(side == 1) {
+            if (rayDirY < 0) {
+                textureX = targetTexture->w - textureX - 1;
+                // East
+                face = 1;
+            } else {
+                // West
+                face = 3;
+            }
+        }
 
         int lineHeight = (int)(screenHeight/perpWallDist);
 
         float scaleRatio = (float)targetTexture->h/(float)lineHeight;
 
-        int drawStart = -lineHeight/2+screenHeight/2;
+        int drawStart = -lineHeight/2+screenHeight/2 + HEIGHT_OFFSET;
         int fetchStart = 0;
         if (drawStart < 0) {
             fetchStart = -drawStart * scaleRatio;
             drawStart = 0;
         }
-        int drawEnd = lineHeight/2+screenHeight/2;
+        int drawEnd = lineHeight/2+screenHeight/2 + HEIGHT_OFFSET;
         int fetchEnd = targetTexture->h-1;
         if (drawEnd >= screenHeight) {
             fetchEnd = targetTexture->h-((drawEnd - screenHeight) * scaleRatio);
@@ -124,12 +143,48 @@ void TC_RenderGeo() {
         
         SDL_BlitScaled(targetTexture, &(SDL_Rect){.x = textureX, .y = fetchStart, .w = 1, .h = fetchEnd-fetchStart}, renderSurface, &targetRect);
 
-        float lightDistance = perpWallDist / LIGHT_SCALE;
+        float lightDistance = perpWallDist / FOG_THICKNESS;
         if (lightDistance < 0)
             lightDistance = 0;
         else if (lightDistance > 1)
             lightDistance = 1;
         lightDistance = 1.f - lightDistance;
+
+        float wallRClamp = flerp(0.25, 1.25, wallX);
+        if (wallRClamp > 1.0)
+            wallRClamp = 1.0;
+        float wallLClamp = flerp(1.25, 0.25, wallX);
+        if (wallLClamp > 1.0)
+            wallLClamp = 1.0;
+        
+        // NW Corner
+        if (TC_CheckFaceAmbient(mapX, mapY, 0)) {
+            if (face == 0)
+                lightDistance *= wallRClamp;
+            else if (face == 3)
+                lightDistance *= wallRClamp;
+        }
+        // NE Corner
+        if (TC_CheckFaceAmbient(mapX, mapY, 1)) {
+            if (face == 0)
+                lightDistance *= wallLClamp;
+            else if (face == 1)
+                lightDistance *= wallRClamp;
+        }
+        // SE Corner
+        if (TC_CheckFaceAmbient(mapX, mapY, 2)) {
+            if (face == 2)
+                lightDistance *= wallLClamp;
+            else if (face == 1)
+                lightDistance *= wallLClamp;
+        }
+        // SW Corner
+        if (TC_CheckFaceAmbient(mapX, mapY, 3)) {
+            if (face == 2)
+                lightDistance *= wallRClamp;
+            else if (face == 3)
+                lightDistance *= wallLClamp;
+        }
 
         SDL_FillRect(lightingSurface, &targetRect, SDL_MapRGB(renderSurface->format, (int)(lightDistance*255), (int)(lightDistance*255), (int)(lightDistance*255)));
     }

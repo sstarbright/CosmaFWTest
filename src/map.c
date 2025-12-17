@@ -22,12 +22,38 @@ int currentMap[19][19] =
     {1,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,2,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,5,1,1,1,1,1,1,1}
 };
+// Debug Map
+/*int currentMap[19][19] =
+{
+    {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0},
+    {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1},
+    {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0}
+};*/
 Vector2i currentMapSize = {19, 19};
+
+int8_t mapAmbient[19][19];
 
 SDL_Surface* mapTextures[5];
 
 void TC_InitializeMap() {
     TC_ReverseMap();
+    TC_GenerateAmbient();
     mapTextures[0] = IMG_Load("assets/textures/1.png");
     mapTextures[1] = IMG_Load("assets/textures/2.png");
     mapTextures[2] = IMG_Load("assets/textures/3.png");
@@ -45,11 +71,43 @@ void TC_ReverseMap() {
     }
 }
 
+void TC_GenerateAmbient() {
+    int xLimit = currentMapSize.x-1;
+    int yLimit = currentMapSize.y-1;
+    for (int x = 0; x < currentMapSize.x; x++) {
+        for (int y = 0; y < currentMapSize.y; y++) {
+            uint8_t corners = 0;
+            if (currentMap[x][y] != 0) {
+                if (x > 0) {
+                    if (y > 0 && currentMap[x-1][y-1] != 0) {
+                        corners |= 1;
+                    }
+                    if (y < yLimit && currentMap[x-1][y+1] != 0) {
+                        corners |= (1 << 1);
+                    }
+                }
+                if (x < xLimit) {
+                    if (y > 0 && currentMap[x+1][y-1] != 0) {
+                        corners |= (1 << 3);
+                    }
+                    if (y < yLimit && currentMap[x+1][y+1] != 0) {
+                        corners |= (1 << 2);
+                    }
+                }
+                mapAmbient[x][y] = corners;
+            }
+        }
+    }
+}
+
 int TC_GetMapTile(int x, int y) {
     return currentMap[x][y];
 }
 SDL_Surface* TC_GetMapTexture(int id) {
     return mapTextures[id-1];
+}
+bool TC_CheckFaceAmbient(int x, int y, int corner) {
+    return (mapAmbient[x][y] & (0x1 << corner)) > 0;
 }
 Vector2i* TC_GetMapSizePointer() {
     return &currentMapSize;
