@@ -47,7 +47,7 @@ int currentMap[19][19] =
 };*/
 Vector2i currentMapSize = {19, 19};
 
-int8_t mapAmbient[19][19];
+int mapAmbient[19][19];
 
 SDL_Surface* mapTextures[5];
 
@@ -76,7 +76,7 @@ void TC_GenerateAmbient() {
     int yLimit = currentMapSize.y-1;
     for (int x = 0; x < currentMapSize.x; x++) {
         for (int y = 0; y < currentMapSize.y; y++) {
-            uint8_t corners = 0;
+            int corners = 0;
             if (currentMap[x][y] != 0) {
                 if (x > 0) {
                     if (y > 0 && currentMap[x-1][y-1] != 0) {
@@ -106,8 +106,8 @@ int TC_GetMapTile(int x, int y) {
 SDL_Surface* TC_GetMapTexture(int id) {
     return mapTextures[id-1];
 }
-bool TC_CheckFaceAmbient(int x, int y, int corner) {
-    return (mapAmbient[x][y] & (0x1 << corner)) > 0;
+int TC_GetMapAmbient(int x, int y) {
+    return mapAmbient[x][y];
 }
 Vector2i* TC_GetMapSizePointer() {
     return &currentMapSize;

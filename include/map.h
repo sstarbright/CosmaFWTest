@@ -8,7 +8,7 @@ void TC_ReverseMap();
 void TC_GenerateAmbient();
 int TC_GetMapTile(int x, int y);
 SDL_Surface* TC_GetMapTexture(int id);
-bool TC_CheckFaceAmbient(int x, int y, int corner);
+int TC_GetMapAmbient(int x, int y);
 Vector2i* TC_GetMapSizePointer();
 void TC_FreeMap();
 

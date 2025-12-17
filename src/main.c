@@ -21,11 +21,11 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
     gameCamera = TC_GetCamera();
     if (!gameWindow)
         return false;
-    
+
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
     gamePlayer.wallRadius = 0.1;
-    
+
     return true;
 }
 
@@ -39,7 +39,7 @@ void TC_UpdateJoy(float deltaTime) {
 
     float moveSpeed = deltaTime * 5.0;
     float rotSpeed = deltaTime * 3.0;
-    
+
     if(TC_KeyUp()) {
         if(TC_GetMapTile((int)(playerX + turnX * moveSpeed + gamePlayer.wallRadius * turnX),(int)(playerY)) == false) {
             playerX += turnX * moveSpeed;
@@ -88,9 +88,6 @@ void TC_UpdateJoy(float deltaTime) {
 
 void CFW_OnUpdate(float deltaTime) {
     TC_UpdateJoy(deltaTime);
-
-    // Draw Ceiling and Floor gradients here
-    SDL_FillRect(gameSurface, NULL, SDL_MapRGB(gameSurface->format, 0x00, 0x00, 0x00));
 
     // Draw Walls
     TC_RenderGeo();
