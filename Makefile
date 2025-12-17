@@ -1,4 +1,3 @@
-# screw windows honestly, why does compiling for it have to be so terrible?
 MAIN_SRC := $(wildcard src/*.c)
 MAIN_LINUX_OBJ := $(MAIN_SRC:src/%.c=build/linux/obj/%.o)
 MAIN_WINDOWS_OBJ := $(MAIN_SRC:src/%.c=build/windows/obj/%.o)

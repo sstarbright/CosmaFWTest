@@ -181,8 +181,8 @@ CFW_AnimTexture* CFW_CreateAnimTexture(const char* imagePath, const char* frameP
     CFW_Texture* frameSlots = malloc(sizeof(CFW_Texture) * frameCount);
     float* frameTimings = malloc(sizeof(float) * frameCount);
     void* sourcePixels = sourceSurface->pixels;
-    SDL_PixelFormat* sourceFormat = sourceSurface->format;
-    Uint8 sourceDepth = sourceFormat->BitsPerPixel;
+    Uint32 sourceFormat = sourceSurface->format->format;
+    Uint8 sourceDepth = sourceSurface->format->BitsPerPixel;
     int sourcePitch = sourceSurface->pitch;
     int textureWidth = sourceSurface->w/frameCount;
     int textureHeight = sourceSurface->h;
@@ -239,8 +239,8 @@ CFW_AngleTexture* CFW_CreateAngleTexture(const char* path, int angleCount) {
     
     CFW_Texture* angleSlots = malloc(sizeof(CFW_Texture) * angleCount);
     void* sourcePixels = sourceSurface->pixels;
-    SDL_PixelFormat* sourceFormat = sourceSurface->format;
-    Uint8 sourceDepth = sourceFormat->BitsPerPixel;
+    Uint32 sourceFormat = sourceSurface->format->format;
+    Uint8 sourceDepth = sourceSurface->format->BitsPerPixel;
     int sourcePitch = sourceSurface->pitch;
     int textureWidth = sourceSurface->w/angleCount;
     int textureHeight = sourceSurface->h;
@@ -312,8 +312,8 @@ CFW_AnimAngleTexture* CFW_CreateAnimAngleTexture(const char* imagePath, const ch
     CFW_Texture** frameSlots = malloc(sizeof(void*) * frameCount);
     float* frameTimings = malloc(sizeof(float) * frameCount);
     void* sourcePixels = sourceSurface->pixels;
-    SDL_PixelFormat* sourceFormat = sourceSurface->format;
-    Uint8 sourceDepth = sourceFormat->BitsPerPixel;
+    Uint32 sourceFormat = sourceSurface->format->format;
+    Uint8 sourceDepth = sourceSurface->format->BitsPerPixel;
     int sourcePitch = sourceSurface->pitch;
     int textureWidth = sourceSurface->w/frameCount;
     int textureHeight = sourceSurface->h;
