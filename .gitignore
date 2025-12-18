@@ -1,1 +1,4 @@
 build/*
+tools/terrabuilder/.godot/
+tools/terrabuilder/android/
+tools/terrabuilder/Build
