@@ -3,17 +3,23 @@
 
 #define applyAmbient(leftCorner, rightCorner)\
 if (ambientData & leftCorner) {\
-    float wallLClamp = flerp(AO_SHARPNESS, AO_BRIGHTNESS, wallX);\
-    if (wallLClamp > 1.0)\
-        wallLClamp = 1.0;\
-    aoStrength *= wallLClamp;\
+    wallClamp = flerp(AO_SHARPNESS, AO_BRIGHTNESS, wallX);\
+    if (wallClamp > 1.0)\
+        wallClamp = 1.0;\
+    aoStrength *= wallClamp;\
 }\
 if (ambientData & rightCorner) {\
-    float wallRClamp = flerp(AO_BRIGHTNESS, AO_SHARPNESS, wallX);\
-    if (wallRClamp > 1.0)\
-        wallRClamp = 1.0;\
-    aoStrength *= wallRClamp;\
+    wallClamp = flerp(AO_BRIGHTNESS, AO_SHARPNESS, wallX);\
+    if (wallClamp > 1.0)\
+        wallClamp = 1.0;\
+    aoStrength *= wallClamp;\
 }
+
+#define invertFloat(floatToInvert) floatToInvert = 1.f - floatToInvert
+#define clampFloat(floatToClamp, min, max) if (floatToClamp < min)\
+    floatToClamp = min;\
+else if (floatToClamp > max)\
+    floatToClamp = max\
 
 #include "../CosmaFW/include/cfw.h"
 #include "map.h"

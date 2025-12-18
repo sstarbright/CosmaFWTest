@@ -52,28 +52,28 @@ void TC_UpdateJoy(float deltaTime) {
     }
     if (TC_KeyDown())
     {
-      if(TC_GetMapTile((int)(playerX - turnX * moveSpeed - gamePlayer.wallRadius * turnX),(int)(playerY)) == false)
-        playerX -= turnX * moveSpeed;
-      if(TC_GetMapTile((int)(playerX),(int)(playerY - turnY * moveSpeed - gamePlayer.wallRadius * turnY)) == false)
-        playerY -= turnY * moveSpeed;
+        if(TC_GetMapTile((int)(playerX - turnX * moveSpeed - gamePlayer.wallRadius * turnX),(int)(playerY)) == false)
+            playerX -= turnX * moveSpeed;
+        if(TC_GetMapTile((int)(playerX),(int)(playerY - turnY * moveSpeed - gamePlayer.wallRadius * turnY)) == false)
+            playerY -= turnY * moveSpeed;
     }
     if (TC_KeyRight())
     {
-      float oldDirX = turnX;
-      turnX = turnX * cos(-rotSpeed) - turnY * sin(-rotSpeed);
-      turnY = oldDirX * sin(-rotSpeed) + turnY * cos(-rotSpeed);
-      float oldPlaneX = planeX;
-      planeX = planeX * cos(-rotSpeed) - planeY * sin(-rotSpeed);
-      planeY = oldPlaneX * sin(-rotSpeed) + planeY * cos(-rotSpeed);
+        float oldDirX = turnX;
+        turnX = turnX * cos(-rotSpeed) - turnY * sin(-rotSpeed);
+        turnY = oldDirX * sin(-rotSpeed) + turnY * cos(-rotSpeed);
+        float oldPlaneX = planeX;
+        planeX = planeX * cos(-rotSpeed) - planeY * sin(-rotSpeed);
+        planeY = oldPlaneX * sin(-rotSpeed) + planeY * cos(-rotSpeed);
     }
     if (TC_KeyLeft())
     {
-      float oldDirX = turnX;
-      turnX = turnX * cos(rotSpeed) - turnY * sin(rotSpeed);
-      turnY = oldDirX * sin(rotSpeed) + turnY * cos(rotSpeed);
-      float oldPlaneX = planeX;
-      planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
-      planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
+        float oldDirX = turnX;
+        turnX = turnX * cos(rotSpeed) - turnY * sin(rotSpeed);
+        turnY = oldDirX * sin(rotSpeed) + turnY * cos(rotSpeed);
+        float oldPlaneX = planeX;
+        planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
+        planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
     }
 
     gamePlayer.position.x = playerX;

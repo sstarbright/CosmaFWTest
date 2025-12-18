@@ -7,6 +7,7 @@
 #define AO_COLOR 30, 55, 0
 #define AO_SHARPNESS 2.f
 #define AO_BRIGHTNESS .1f
+#define SCAN_DISTANCE 50
 
 Vector2i* renderMapSize;
 SDL_Surface* renderSurface;
@@ -39,6 +40,7 @@ void TC_RenderGeo() {
     // Load up the Camera data we need
     Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
     Vector2i screenSize = (Vector2i){.x = renderSurface->w, .y = renderSurface->h};
+    Vector2i mapSize = (Vector2i){.x = renderMapSize->x, .y = renderMapSize->y};
 
     // Raycast for each pixel column
     for (int x = 0; x < screenSize.x; x++) {
@@ -54,6 +56,7 @@ void TC_RenderGeo() {
         Vector2 totalDist = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
         // Current Map coordinate
         Vector2i mapCoord = (Vector2i){.x = (int)cameraPos.x, .y = (int)cameraPos.y};
+        int totalScans = 0;
 
         // Setting up X and Y step integers and X and Y side distances
         if (rayDir.x < 0.0f) {
@@ -77,7 +80,8 @@ void TC_RenderGeo() {
         int facePlane;
 
         // Digital Differential Analysis
-        while (tileId == 0) {
+        while (tileId == 0 && totalScans < SCAN_DISTANCE) {
+            totalScans += 1;
             if (totalDist.x < totalDist.y) {
                 totalDist.x += travelDist.x;
                 mapCoord.x += travelMap.x;
@@ -89,13 +93,17 @@ void TC_RenderGeo() {
                 // East/West Plane
                 facePlane = 1;
             }
-            tileId = TC_GetMapTile(mapCoord.x, mapCoord.y);
+            if (mapCoord.x >= 0 && mapCoord.y >= 0 && mapCoord.x < mapSize.x && mapCoord.y < mapSize.y)
+                tileId = TC_GetMapTile(mapCoord.x, mapCoord.y);
+            else
+                tileId = 0;
         }
+
+        if (tileId == 0)
+            continue;
 
         // Distance from detected wall to camera
         float wallDepth = (facePlane == 0) ? (totalDist.x - travelDist.x) : (totalDist.y - travelDist.y);
-        // Fetch Tile Texture using found Map coords
-        SDL_Surface* targetTexture = TC_GetMapTexture(tileId);
 
         // Calculate Horizontal Texture coord
         float wallX;
@@ -110,22 +118,20 @@ void TC_RenderGeo() {
 
         float aoStrength = 1.0;
         int ambientData = TC_GetMapAmbient(mapCoord.x, mapCoord.y);
+        float wallClamp;
         // Modify Texture coord and setup face based on side and Ray Direction
         if(facePlane == 0) {
             if (rayDir.x > 0) {
                 // North Face
                 visibleFace = 0;
-
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // North face uses corners in slots 0 and 1
                 applyAmbient(2, 1)
-
                 // Reverse texture coord
-                wallX = 1.f - wallX;
+                invertFloat(wallX);
             } else {
                 // South
                 visibleFace = 2;
-
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // South face uses corners in slots 2 and 3
                 applyAmbient(4, 8)
@@ -135,30 +141,27 @@ void TC_RenderGeo() {
             if (rayDir.y < 0) {
                 // East
                 visibleFace = 1;
-
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // East face uses corners in slots 1 and 2
                 applyAmbient(4, 2)
-
                 // Reverse texture coord
-                wallX = 1.f - wallX;
+                invertFloat(wallX);
             } else {
                 // West
                 visibleFace = 3;
-
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // East face uses corners in slots 0 and 3
                 applyAmbient(8, 1)
             }
         }
-        aoStrength = 1.f - aoStrength;
+        invertFloat(aoStrength);
 
+        // Fetch Tile Texture using found Map coords
+        SDL_Surface* targetTexture = TC_GetMapTexture(tileId);
         // Calculate Horizontal Texture pixel coord
         int textureX = (int)(wallX * (float)targetTexture->w);
-
         // Height of tile onscreen
         int lineHeight = (int)(screenSize.y/wallDepth);
-
         // Scaling ratio of texture size relative to onscreen height
         float scaleRatio = (float)targetTexture->h/(float)lineHeight;
 
@@ -171,7 +174,6 @@ void TC_RenderGeo() {
             fetchStart = -drawStart * scaleRatio;
             drawStart = 0;
         }
-
         // Ending point to draw onscreen
         int drawEnd = lineHeight/2+screenSize.y/2;
         // Ending point to fetch column from texture
@@ -189,10 +191,7 @@ void TC_RenderGeo() {
 
         // Calculate strength of environment color based on depth
         float fogStrength = wallDepth / FOG_THINNING;
-        if (fogStrength < 0.f)
-            fogStrength = 0.f;
-        else if (fogStrength > 1.f)
-            fogStrength = 1.f;
+        clampFloat(fogStrength, 0.f, 1.f);
 
         // Draw Post Processing
         SDL_FillRect(aoSurface, &targetRect, SDL_MapRGBA(aoSurface->format, AO_COLOR, (int)(aoStrength*255)));
