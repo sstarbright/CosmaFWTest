@@ -3,16 +3,18 @@
 #include "../include/render.h"
 #include "../include/player.h"
 #include "../include/joy.h"
+#include <SDL2/SDL_surface.h>
 
 CFW_Window* gameWindow = NULL;
 SDL_Surface* gameSurface = NULL;
+Vector2i gameResolution = (Vector2i){.x = 256, .y = 224};
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
 
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
     gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN);
     SDL_RaiseWindow(gameWindow->window);
-    gameSurface = SDL_CreateRGBSurface(0, 256, 224, 32, 0, 0, 0, 0);
+    gameSurface = SDL_CreateRGBSurface(0, gameResolution.x, gameResolution.y, 12, 0, 0, 0, 0);
     if (!gameSurface) {
         printf("NO GAME SURFACE!!!\n");
     }
