@@ -2,7 +2,10 @@
 #include <SDL2/SDL_blendmode.h>
 #include <SDL2/SDL_surface.h>
 
-#define FOG_START -2.f
+#define FLOOR_COLOR 64, 50, 0
+#define CEILING_COLOR 64, 64, 64
+#define FAR_PLANE_DISTANCE 4.75f
+#define FOG_START -1.5f
 #define FOG_END 3.f
 #define FOG_COLOR 35, 0, 0
 #define AO_COLOR 40, 55, 0
@@ -15,11 +18,16 @@ SDL_Surface* renderSurface;
 SDL_Surface* fogSurface;
 SDL_Surface* aoSurface;
 
+SDL_Rect floorRect;
+SDL_Rect ceilingRect;
+
 RayCamera* camera;
 
 void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
     renderMapSize = mapSizePointer;
     renderSurface = targetSurface;
+    ceilingRect = (SDL_Rect){.x = 0, .y = 0, .w = renderSurface->w, .h = renderSurface->h/2};
+    floorRect = (SDL_Rect){.x = 0, .y = ceilingRect.h, .w = ceilingRect.w, .h = ceilingRect.h};
     fogSurface = SDL_CreateRGBSurface(0, renderSurface->w, renderSurface->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
     SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, 255, 255, 255, 0));
     SDL_SetSurfaceBlendMode(fogSurface, SDL_BLENDMODE_BLEND);
@@ -34,8 +42,11 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
 }
 
 void TC_RenderGeo() {
-    // Reset Render
-    SDL_FillRect(renderSurface, NULL, SDL_MapRGB(renderSurface->format, FOG_COLOR));
+    // Draw Ceiling
+    SDL_FillRect(renderSurface, &ceilingRect, SDL_MapRGB(renderSurface->format, CEILING_COLOR));
+    // Draw Floor
+    SDL_FillRect(renderSurface, &floorRect, SDL_MapRGB(renderSurface->format, FLOOR_COLOR));
+
     // Reset Post Processing
     SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, FOG_COLOR, 0));
     SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(aoSurface->format, AO_COLOR, 0));
@@ -44,6 +55,15 @@ void TC_RenderGeo() {
     Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
     Vector2i screenSize = (Vector2i){.x = renderSurface->w, .y = renderSurface->h};
     Vector2i mapSize = (Vector2i){.x = renderMapSize->x, .y = renderMapSize->y};
+
+    for (int y = 0; y < screenSize.y; y++) {
+        SDL_Rect horizontalLine = (SDL_Rect){.x = 0, .y = y, .w = screenSize.x, .h = 1};
+        float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
+        float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
+        clampFloat(fogStrength, 0.f, 1.f);
+        invertFloat(fogStrength);
+        SDL_FillRect(fogSurface, &horizontalLine, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
+    }
 
     // Raycast for each pixel column
     for (int x = 0; x < screenSize.x; x++) {
@@ -198,7 +218,6 @@ void TC_RenderGeo() {
         clampFloat(fogStrength, 0.f, 1.f);
 
         // Draw Post Processing
-        //SDL_FillRect(renderSurface, &targetRect, SDL_MapRGB(renderSurface->format, 255, 255, 255));
         SDL_FillRect(aoSurface, &targetRect, SDL_MapRGBA(aoSurface->format, AO_COLOR, (int)(aoStrength*255)));
         SDL_FillRect(fogSurface, &targetRect, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
     }
