@@ -10,6 +10,7 @@
 
 #include "event.h"
 #include "handled.h"
+#include "queue.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -70,7 +71,6 @@ struct Vector2i {
     int x;
     int y;
 };
-
 
 // Initializes CosmaFW
 // Prints a message box on SDL failure

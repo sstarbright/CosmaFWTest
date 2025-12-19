@@ -19,7 +19,7 @@ if (ambientData & rightCorner) {\
 #define clampFloat(floatToClamp, min, max) if (floatToClamp < min)\
     floatToClamp = min;\
 else if (floatToClamp > max)\
-    floatToClamp = max\
+    floatToClamp = max
 
 #include "../CosmaFW/include/cfw.h"
 #include "map.h"

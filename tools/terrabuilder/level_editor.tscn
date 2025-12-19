@@ -223,30 +223,25 @@ alignment = 1
 
 [node name="FloorTexture" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/FloorTexture"]
 custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 text = "Floor"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/FloorTexture"]
-custom_minimum_size = Vector2(50, 50)
+[node name="ColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/FloorTexture"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_qnyfc")
-flat = true
-icon_alignment = 1
-expand_icon = true
+size_flags_horizontal = 3
+tooltip_text = "Floor Color"
 
 [node name="CeilingTexture" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/CeilingTexture"]
@@ -257,19 +252,14 @@ text = "Ceiling"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/CeilingTexture"]
-custom_minimum_size = Vector2(50, 50)
+[node name="ColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/CeilingTexture"]
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_qnyfc")
-flat = true
-icon_alignment = 1
-expand_icon = true
+size_flags_horizontal = 3
+tooltip_text = "Ceiling Color"
 
 [node name="SkyboxTexture" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/SkyboxTexture"]
@@ -280,21 +270,10 @@ text = "Skybox"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Button" type="Button" parent="VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/SkyboxTexture"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_qnyfc")
-flat = true
-icon_alignment = 1
-expand_icon = true
-
 [node name="PostProcessOptions" type="HBoxContainer" parent="VBoxContainer/HSplitContainer/LevelColumn"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.05
 
 [node name="Label" type="Label" parent="VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
 layout_mode = 2
