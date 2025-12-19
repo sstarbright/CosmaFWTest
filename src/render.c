@@ -2,9 +2,10 @@
 #include <SDL2/SDL_blendmode.h>
 #include <SDL2/SDL_surface.h>
 
-#define FOG_THINNING 2.f
-#define FOG_COLOR 30, 10, 0
-#define AO_COLOR 30, 55, 0
+#define FOG_START -2.f
+#define FOG_END 3.f
+#define FOG_COLOR 35, 0, 0
+#define AO_COLOR 40, 55, 0
 #define AO_SHARPNESS 2.f
 #define AO_BRIGHTNESS .1f
 #define SCAN_DISTANCE 50
@@ -20,8 +21,10 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
     renderMapSize = mapSizePointer;
     renderSurface = targetSurface;
     fogSurface = SDL_CreateRGBSurface(0, renderSurface->w, renderSurface->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+    SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, 255, 255, 255, 0));
     SDL_SetSurfaceBlendMode(fogSurface, SDL_BLENDMODE_BLEND);
     aoSurface = SDL_CreateRGBSurface(0, renderSurface->w, renderSurface->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+    SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(aoSurface->format, 255, 255, 255, 0));
     SDL_SetSurfaceBlendMode(aoSurface, SDL_BLENDMODE_BLEND);
 
     camera = malloc(sizeof(RayCamera));
@@ -32,10 +35,10 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
 
 void TC_RenderGeo() {
     // Reset Render
-    SDL_FillRect(renderSurface, NULL, SDL_MapRGB(renderSurface->format, 0, 0, 0));
+    SDL_FillRect(renderSurface, NULL, SDL_MapRGB(renderSurface->format, FOG_COLOR));
     // Reset Post Processing
-    SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(renderSurface->format, FOG_COLOR, 255));
-    SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(renderSurface->format, AO_COLOR, 255));
+    SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, FOG_COLOR, 0));
+    SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(aoSurface->format, AO_COLOR, 0));
 
     // Load up the Camera data we need
     Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
@@ -190,10 +193,12 @@ void TC_RenderGeo() {
         SDL_BlitScaled(targetTexture, &(SDL_Rect){.x = textureX, .y = fetchStart, .w = 1, .h = fetchEnd-fetchStart}, renderSurface, &targetRect);
 
         // Calculate strength of environment color based on depth
-        float fogStrength = wallDepth / FOG_THINNING;
+        float fogStrength = (FOG_END - wallDepth)/(FOG_END-FOG_START);
+        invertFloat(fogStrength);
         clampFloat(fogStrength, 0.f, 1.f);
 
         // Draw Post Processing
+        //SDL_FillRect(renderSurface, &targetRect, SDL_MapRGB(renderSurface->format, 255, 255, 255));
         SDL_FillRect(aoSurface, &targetRect, SDL_MapRGBA(aoSurface->format, AO_COLOR, (int)(aoStrength*255)));
         SDL_FillRect(fogSurface, &targetRect, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
     }
