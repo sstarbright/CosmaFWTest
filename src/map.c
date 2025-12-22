@@ -81,7 +81,10 @@ void TC_GenerateAmbient() {
 }
 
 int TC_GetMapTile(int x, int y) {
-    return currentMap[x][y];
+    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
+        return currentMap[x][y];
+    else
+        return 0;
 }
 SDL_Surface* TC_GetMapTexture(int id) {
     return mapTextures[id-1];

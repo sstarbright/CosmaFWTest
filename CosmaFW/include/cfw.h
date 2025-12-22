@@ -72,6 +72,12 @@ struct Vector2i {
     int y;
 };
 
+#define ADD_VECTOR2(a, b) (Vector2){.x = a.x+b.x, .y = a.y+b.y}
+#define SUBTRACT_VECTOR2(a, b) (Vector2){.x = a.x-b.x, .y = a.y-b.y}
+
+#define invertFloat(floatToInvert) 1.f - floatToInvert
+#define clampFloat(floatToClamp, min, max) floatToClamp < min ? min : (floatToClamp > max ? max : floatToClamp)
+
 // Initializes CosmaFW
 // Prints a message box on SDL failure
 bool CFW_Init();

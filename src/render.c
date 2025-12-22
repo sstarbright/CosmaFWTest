@@ -68,8 +68,8 @@ void TC_RenderWalls() {
         SDL_Rect horizontalLine = (SDL_Rect){.x = 0, .y = y, .w = screenSize.x, .h = 1};
         float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
         float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
-        clampFloat(fogStrength, 0.f, 1.f);
-        invertFloat(fogStrength);
+        fogStrength = clampFloat(fogStrength, 0.f, 1.f);
+        fogStrength = invertFloat(fogStrength);
         SDL_FillRect(fogSurface, &horizontalLine, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
     }
 
@@ -124,10 +124,7 @@ void TC_RenderWalls() {
                 // East/West Plane
                 facePlane = 1;
             }
-            if (mapCoord.x >= 0 && mapCoord.y >= 0 && mapCoord.x < mapSize.x && mapCoord.y < mapSize.y)
-                tileId = TC_GetMapTile(mapCoord.x, mapCoord.y);
-            else
-                tileId = 0;
+            tileId = TC_GetMapTile(mapCoord.x, mapCoord.y);
         }
 
         if (tileId == 0)
@@ -159,7 +156,7 @@ void TC_RenderWalls() {
                 // North face uses corners in slots 0 and 1
                 applyAmbient(2, 1)
                 // Reverse texture coord
-                invertFloat(wallX);
+                wallX = invertFloat(wallX);
             } else {
                 // South
                 visibleFace = 2;
@@ -176,7 +173,7 @@ void TC_RenderWalls() {
                 // East face uses corners in slots 1 and 2
                 applyAmbient(4, 2)
                 // Reverse texture coord
-                invertFloat(wallX);
+                wallX = invertFloat(wallX);
             } else {
                 // West
                 visibleFace = 3;
@@ -185,7 +182,7 @@ void TC_RenderWalls() {
                 applyAmbient(8, 1)
             }
         }
-        invertFloat(aoStrength);
+        aoStrength = invertFloat(aoStrength);
 
         // Fetch Tile Texture using found Map coords
         SDL_Surface* targetTexture = TC_GetMapTexture(tileId);
@@ -222,8 +219,8 @@ void TC_RenderWalls() {
 
         // Calculate strength of environment color based on depth
         float fogStrength = (FOG_END - wallDepth)/(FOG_END-FOG_START);
-        invertFloat(fogStrength);
-        clampFloat(fogStrength, 0.f, 1.f);
+        fogStrength = invertFloat(fogStrength);
+        fogStrength = clampFloat(fogStrength, 0.f, 1.f);
 
         // Draw Post Processing
         SDL_FillRect(aoSurface, &targetRect, SDL_MapRGBA(aoSurface->format, AO_COLOR, (int)(aoStrength*255)));

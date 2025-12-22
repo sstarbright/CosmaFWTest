@@ -27,7 +27,7 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
 
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
-    gamePlayer.width = 0.4;
+    gamePlayer.radius = 0.25;
 
     return true;
 }
@@ -74,12 +74,12 @@ void TC_UpdateJoy(float deltaTime) {
         targetPosition.y -= turnY * moveSpeed;
     }
 
-    if (!TC_CheckTilesWithinSquare(targetPosition, gamePlayer.width)) {
+    if (!TC_CheckTilesWithinCircle(targetPosition, gamePlayer.radius)) {
         playerX = targetPosition.x;
         playerY = targetPosition.y;
-    } else if (!TC_CheckTilesWithinSquare((Vector2){.x = targetPosition.x, .y = playerY}, gamePlayer.width)) {
+    } else if (!TC_CheckTilesWithinCircle((Vector2){.x = targetPosition.x, .y = playerY}, gamePlayer.radius)) {
         playerX = targetPosition.x;
-    } else if (!TC_CheckTilesWithinSquare((Vector2){.x = playerX, .y = targetPosition.y}, gamePlayer.width)) {
+    } else if (!TC_CheckTilesWithinCircle((Vector2){.x = playerX, .y = targetPosition.y}, gamePlayer.radius)) {
         playerY = targetPosition.y;
     }
 

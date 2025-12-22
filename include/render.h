@@ -15,12 +15,6 @@ if (ambientData & rightCorner) {\
     aoStrength *= wallClamp;\
 }
 
-#define invertFloat(floatToInvert) floatToInvert = 1.f - floatToInvert
-#define clampFloat(floatToClamp, min, max) if (floatToClamp < min)\
-    floatToClamp = min;\
-else if (floatToClamp > max)\
-    floatToClamp = max
-
 #include "../CosmaFW/include/cfw.h"
 #include "map.h"
 
