@@ -1,5 +1,19 @@
 #include "../include/collide.h"
 
+bool TC_CheckCollisionCircleSquare(Vector2 circlePosition, float circleRadius, Vector2 squarePosition, float squareSize) {
+    float halfSquareSize = squareSize * .5f;
+    Vector2 difference = SUBTRACT_VECTOR2(circlePosition, squarePosition);
+    Vector2 clampedDistance = (Vector2){.x = clampFloat(difference.x, -halfSquareSize, halfSquareSize), .y = clampFloat(difference.y, -halfSquareSize, halfSquareSize)};
+    Vector2 closestPoint = ADD_VECTOR2(squarePosition, clampedDistance);
+    difference = SUBTRACT_VECTOR2(closestPoint, circlePosition);
+    return (fabsf(difference.x*difference.x) + fabsf(difference.y*difference.y)) < circleRadius*circleRadius;
+}
+bool TC_CheckCollisionCircleCircle(Vector2 circleAPosition, float circleARadius, Vector2 circleBPosition, float circleBRadius) {
+    float radiusDistance = circleARadius+circleBRadius;
+    Vector2 difference = SUBTRACT_VECTOR2(circleBPosition, circleAPosition);
+    return (fabsf(difference.x*difference.x) + fabsf(difference.y*difference.y)) < radiusDistance*radiusDistance;
+}
+
 bool TC_CheckTilesWithinSquare(Vector2 position, float width) {
     float halfWidth = width * .5f;
     Vector2 checkPosition = (Vector2){.x = position.x - halfWidth, .y = position.y - halfWidth};
@@ -26,16 +40,6 @@ bool TC_CheckTilesWithinSquare(Vector2 position, float width) {
     }
     return false;
 }
-
-bool TC_CheckCollisionCircleSquare(Vector2 circlePosition, float circleRadius, Vector2 squarePosition, float squareSize) {
-    float halfSquareSize = squareSize * .5f;
-    Vector2 distance = SUBTRACT_VECTOR2(circlePosition, squarePosition);
-    Vector2 clampedDistance = (Vector2){.x = clampFloat(distance.x, -halfSquareSize, halfSquareSize), .y = clampFloat(distance.y, -halfSquareSize, halfSquareSize)};
-    Vector2 closestPoint = ADD_VECTOR2(squarePosition, clampedDistance);
-    distance = SUBTRACT_VECTOR2(closestPoint, circlePosition);
-    return (fabsf(distance.x*distance.x) + fabsf(distance.y*distance.y)) < circleRadius*circleRadius;
-}
-
 bool TC_CheckTilesWithinCircle(Vector2 position, float radius) {
     Vector2 checkPosition = (Vector2){.x = position.x - radius, .y = position.y - radius};
     float checkDelta = radius < 1.0 ? radius : 1.0;
