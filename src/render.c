@@ -17,6 +17,13 @@ Vector2i* renderMapSize;
 SDL_Surface* renderSurface;
 SDL_Surface* fogSurface;
 SDL_Surface* aoSurface;
+SDL_Surface* floorRotated;
+SDL_Rect floorRotatedCopy;
+SDL_Rect floorRotatedPaste;
+SDL_Surface* ceilingRotated;
+SDL_Rect ceilingRotatedCopy;
+SDL_Rect ceilingRotatedPaste;
+SDL_Surface* floorCeilingUnscaled;
 
 SDL_Rect floorRect;
 SDL_Rect ceilingRect;
@@ -41,11 +48,12 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
     camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.66f};
 }
 
-void TC_RenderGeo() {
-    // Draw Ceiling
-    SDL_FillRect(renderSurface, &ceilingRect, SDL_MapRGB(renderSurface->format, CEILING_COLOR));
-    // Draw Floor
-    SDL_FillRect(renderSurface, &floorRect, SDL_MapRGB(renderSurface->format, FLOOR_COLOR));
+void TC_RenderFloorCeiling() {
+
+}
+
+void TC_RenderWalls() {
+    SDL_FillRect(renderSurface, NULL, SDL_MapRGB(renderSurface->format, 255, 255, 255));
 
     // Reset Post Processing
     SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, FOG_COLOR, 0));

@@ -33,7 +33,8 @@ struct RayCamera {
 };
 
 void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface);
-void TC_RenderGeo();
+void TC_RenderFloorCeiling();
+void TC_RenderWalls();
 RayCamera* TC_GetCamera();
 void TC_CloseRenderer();
 

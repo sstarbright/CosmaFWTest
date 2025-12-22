@@ -3,6 +3,7 @@
 #include "../include/render.h"
 #include "../include/player.h"
 #include "../include/joy.h"
+#include "../include/collide.h"
 #include <SDL2/SDL_surface.h>
 
 CFW_Window* gameWindow = NULL;
@@ -26,7 +27,7 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
 
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
-    gamePlayer.wallRadius = 0.1;
+    gamePlayer.width = 0.4;
 
     return true;
 }
@@ -42,21 +43,6 @@ void TC_UpdateJoy(float deltaTime) {
     float moveSpeed = deltaTime * 5.0;
     float rotSpeed = deltaTime * 3.0;
 
-    if(TC_KeyUp()) {
-        if(TC_GetMapTile((int)(playerX + turnX * moveSpeed + gamePlayer.wallRadius * turnX),(int)(playerY)) == false) {
-            playerX += turnX * moveSpeed;
-        }
-        if(TC_GetMapTile((int)(playerX),(int)(playerY + turnY * moveSpeed + gamePlayer.wallRadius * turnY)) == false) {
-            playerY += turnY * moveSpeed;
-        }
-    }
-    if (TC_KeyDown())
-    {
-        if(TC_GetMapTile((int)(playerX - turnX * moveSpeed - gamePlayer.wallRadius * turnX),(int)(playerY)) == false)
-            playerX -= turnX * moveSpeed;
-        if(TC_GetMapTile((int)(playerX),(int)(playerY - turnY * moveSpeed - gamePlayer.wallRadius * turnY)) == false)
-            playerY -= turnY * moveSpeed;
-    }
     if (TC_KeyRight())
     {
         float oldDirX = turnX;
@@ -76,6 +62,27 @@ void TC_UpdateJoy(float deltaTime) {
         planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
     }
 
+    Vector2 targetPosition = (Vector2){.x = playerX, .y = playerY};
+
+    if(TC_KeyUp()) {
+        targetPosition.x += turnX * moveSpeed;
+        targetPosition.y += turnY * moveSpeed;
+    }
+    if (TC_KeyDown())
+    {
+        targetPosition.x -= turnX * moveSpeed;
+        targetPosition.y -= turnY * moveSpeed;
+    }
+
+    if (!TC_CheckTilesWithinSquare(targetPosition, gamePlayer.width)) {
+        playerX = targetPosition.x;
+        playerY = targetPosition.y;
+    } else if (!TC_CheckTilesWithinSquare((Vector2){.x = targetPosition.x, .y = playerY}, gamePlayer.width)) {
+        playerX = targetPosition.x;
+    } else if (!TC_CheckTilesWithinSquare((Vector2){.x = playerX, .y = targetPosition.y}, gamePlayer.width)) {
+        playerY = targetPosition.y;
+    }
+
     gamePlayer.position.x = playerX;
     gamePlayer.position.y = playerY;
     gamePlayer.direction.x = turnX;
@@ -91,8 +98,9 @@ void TC_UpdateJoy(float deltaTime) {
 void CFW_OnUpdate(float deltaTime) {
     TC_UpdateJoy(deltaTime);
 
+    TC_RenderFloorCeiling();
     // Draw Walls
-    TC_RenderGeo();
+    TC_RenderWalls();
 
     int windowWidth = 0;
     int windowHeight = 0;
