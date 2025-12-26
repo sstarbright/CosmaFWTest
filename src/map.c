@@ -1,4 +1,5 @@
 #include "../include/map.h"
+#include <SDL2/SDL_render.h>
 
 // Currently loaded map tiles
 int currentMap[19][19] =
@@ -29,16 +30,29 @@ Vector2i currentMapSize = {19, 19};
 int mapAmbient[19][19];
 
 // Currently loaded map textures, populated on load
-SDL_Surface* mapTextures[5];
+CFW_Texture* mapTextures[5];
+
+CFW_Texture* floorTexture;
+CFW_Texture* ceilingTexture;
 
 void TC_InitializeMap() {
     TC_ReverseMap();
     TC_GenerateAmbient();
-    mapTextures[0] = IMG_Load("assets/textures/1.png");
-    mapTextures[1] = IMG_Load("assets/textures/2.png");
-    mapTextures[2] = IMG_Load("assets/textures/3.png");
-    mapTextures[3] = IMG_Load("assets/textures/4.png");
-    mapTextures[4] = IMG_Load("assets/textures/5.png");
+    mapTextures[0] = CFW_CreateTexture("assets/textures/1.png");
+    mapTextures[1] = CFW_CreateTexture("assets/textures/2.png");
+    mapTextures[2] = CFW_CreateTexture("assets/textures/3.png");
+    mapTextures[3] = CFW_CreateTexture("assets/textures/4.png");
+    mapTextures[4] = CFW_CreateTexture("assets/textures/5.png");
+
+    for (int x = 0; x < 5; x++) {
+        CFW_ReqTexture(mapTextures[x]);
+        SDL_SetTextureScaleMode(mapTextures[x]->texture, SDL_ScaleModeNearest);
+    }
+
+    floorTexture = CFW_CreateTexture("assets/textures/floor.png");
+    CFW_ReqTexture(floorTexture);
+    ceilingTexture = CFW_CreateTexture("assets/textures/ceiling.png");
+    CFW_ReqTexture(ceilingTexture);
 }
 
 void TC_ReverseMap() {
@@ -86,9 +100,16 @@ int TC_GetMapTile(int x, int y) {
     else
         return 0;
 }
-SDL_Surface* TC_GetMapTexture(int id) {
+CFW_Texture* TC_GetMapTexture(int id) {
     return mapTextures[id-1];
 }
+CFW_Texture* TC_GetFloorTexture() {
+    return floorTexture;
+}
+CFW_Texture* TC_GetCeilingTexture() {
+    return ceilingTexture;
+}
+
 int TC_GetMapAmbient(int x, int y) {
     return mapAmbient[x][y];
 }
@@ -98,6 +119,8 @@ Vector2i* TC_GetMapSizePointer() {
 
 void TC_FreeMap() {
     for (int x = 0; x < 5; x++) {
-        SDL_FreeSurface(mapTextures[x]);
+        CFW_DestroyTexture(mapTextures[x], true);
     }
+    CFW_DestroyTexture(floorTexture, true);
+    CFW_DestroyTexture(ceilingTexture, true);
 }

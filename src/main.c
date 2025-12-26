@@ -4,10 +4,12 @@
 #include "../include/player.h"
 #include "../include/joy.h"
 #include "../include/collide.h"
+#include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 
 CFW_Window* gameWindow = NULL;
-SDL_Surface* gameSurface = NULL;
+SDL_Texture* gameTexture = NULL;
 Vector2i gameResolution = (Vector2i){.x = 256, .y = 224};
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
@@ -15,15 +17,22 @@ PlayerData gamePlayer;
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
     gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN);
     SDL_RaiseWindow(gameWindow->window);
-    gameSurface = SDL_CreateRGBSurface(0, gameResolution.x, gameResolution.y, 12, 0, 0, 0, 0);
-    if (!gameSurface) {
-        printf("NO GAME SURFACE!!!\n");
+    if (!gameWindow->renderer) {
+        printf("NO RENDERER FOUND!!!\n");
+        return false;
+    }
+    if (SDL_RenderTargetSupported(gameWindow->renderer) != SDL_TRUE) {
+        printf("CANNOT RENDER TO TARGET TEXTURE!!!\n");
+        return false;
+    }
+    gameTexture = SDL_CreateTexture(gameWindow->renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_TARGET, gameResolution.x, gameResolution.y);
+    if (!gameTexture) {
+        printf("NO GAME RENDER TARGET!!!\n");
+        return false;
     }
     TC_InitializeMap();
-    TC_SetupRenderer(TC_GetMapSizePointer(), gameSurface);
+    TC_SetupRenderer(TC_GetMapSizePointer(), gameWindow, gameTexture);
     gameCamera = TC_GetCamera();
-    if (!gameWindow)
-        return false;
 
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
@@ -39,6 +48,7 @@ void TC_UpdateJoy(float deltaTime) {
     float turnY = gamePlayer.direction.y;
     float planeX = gameCamera->cameraPlane.x;
     float planeY = gameCamera->cameraPlane.y;
+    float lookAngle = gameCamera->cameraAngle;
 
     float moveSpeed = deltaTime * 5.0;
     float rotSpeed = deltaTime * 3.0;
@@ -46,6 +56,7 @@ void TC_UpdateJoy(float deltaTime) {
     if (TC_KeyRight())
     {
         float oldDirX = turnX;
+        lookAngle -= rotSpeed;
         turnX = turnX * cos(-rotSpeed) - turnY * sin(-rotSpeed);
         turnY = oldDirX * sin(-rotSpeed) + turnY * cos(-rotSpeed);
         float oldPlaneX = planeX;
@@ -55,6 +66,7 @@ void TC_UpdateJoy(float deltaTime) {
     if (TC_KeyLeft())
     {
         float oldDirX = turnX;
+        lookAngle += rotSpeed;
         turnX = turnX * cos(rotSpeed) - turnY * sin(rotSpeed);
         turnY = oldDirX * sin(rotSpeed) + turnY * cos(rotSpeed);
         float oldPlaneX = planeX;
@@ -93,13 +105,17 @@ void TC_UpdateJoy(float deltaTime) {
     gameCamera->cameraDirection.y = turnY;
     gameCamera->cameraPlane.x = planeX;
     gameCamera->cameraPlane.y = planeY;
+    gameCamera->cameraAngle = lookAngle;
 }
 
 void CFW_OnUpdate(float deltaTime) {
     TC_UpdateJoy(deltaTime);
 
+    SDL_SetRenderTarget(gameWindow->renderer, gameTexture);
+    //SDL_SetRenderDrawColor(gameWindow->renderer, 255, 255, 255, 255);
+    //SDL_RenderClear(gameWindow->renderer);
+
     TC_RenderFloorCeiling();
-    // Draw Walls
     TC_RenderWalls();
 
     int windowWidth = 0;
@@ -107,13 +123,14 @@ void CFW_OnUpdate(float deltaTime) {
 
     SDL_GetWindowSizeInPixels(gameWindow->window, &windowWidth, &windowHeight);
 
+    SDL_SetRenderTarget(gameWindow->renderer, NULL);
     // Update Window
-    SDL_BlitScaled(gameSurface, NULL, gameWindow->surface, &(SDL_Rect){.x = 0, .y = 0, .w = windowWidth, .h = windowHeight});
-    SDL_UpdateWindowSurface(gameWindow->window);
+    SDL_RenderCopy(gameWindow->renderer, gameTexture, NULL, NULL);
+    SDL_RenderPresent(gameWindow->renderer);
 }
 
 void CFW_OnEnd(int exitCode) {
-    SDL_FreeSurface(gameSurface);
+    SDL_DestroyTexture(gameTexture);
     TC_FreeMap();
     TC_CloseRenderer();
 }

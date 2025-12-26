@@ -1,6 +1,9 @@
 #include "../include/render.h"
 #include <SDL2/SDL_blendmode.h>
+#include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <math.h>
 
 #define FLOOR_COLOR 64, 50, 0
 #define CEILING_COLOR 64, 64, 64
@@ -12,66 +15,90 @@
 #define AO_SHARPNESS 2.f
 #define AO_BRIGHTNESS .1f
 #define SCAN_DISTANCE 50
+#define FLOOR_TILE_COUNT 6
 
 Vector2i* renderMapSize;
-SDL_Surface* renderSurface;
-SDL_Surface* fogSurface;
-SDL_Surface* aoSurface;
-SDL_Surface* floorRotated;
-SDL_Rect floorRotatedCopy;
-SDL_Rect floorRotatedPaste;
-SDL_Surface* ceilingRotated;
-SDL_Rect ceilingRotatedCopy;
-SDL_Rect ceilingRotatedPaste;
-SDL_Surface* floorCeilingUnscaled;
-
-SDL_Rect floorRect;
-SDL_Rect ceilingRect;
+SDL_Renderer* mainRenderer;
+SDL_Texture* mainRenderTexture;
+Vector2i screenSize;
 
 RayCamera* camera;
 
-void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface) {
+void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Texture* renderTexture) {
     renderMapSize = mapSizePointer;
-    renderSurface = targetSurface;
-    ceilingRect = (SDL_Rect){.x = 0, .y = 0, .w = renderSurface->w, .h = renderSurface->h/2};
-    floorRect = (SDL_Rect){.x = 0, .y = ceilingRect.h, .w = ceilingRect.w, .h = ceilingRect.h};
-    fogSurface = SDL_CreateRGBSurface(0, renderSurface->w, renderSurface->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-    SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, 255, 255, 255, 0));
-    SDL_SetSurfaceBlendMode(fogSurface, SDL_BLENDMODE_BLEND);
-    aoSurface = SDL_CreateRGBSurface(0, renderSurface->w, renderSurface->h, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-    SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(aoSurface->format, 255, 255, 255, 0));
-    SDL_SetSurfaceBlendMode(aoSurface, SDL_BLENDMODE_BLEND);
+    mainRenderer = targetWindow->renderer;
+    mainRenderTexture = renderTexture;
+
+    SDL_SetRenderTarget(mainRenderer, mainRenderTexture);
+    SDL_RenderGetLogicalSize(mainRenderer, &(screenSize.x), &(screenSize.y));
 
     camera = malloc(sizeof(RayCamera));
     camera->cameraPosition = (Vector2){.x = 0.0f, .y = 0.0f};
     camera->cameraDirection = (Vector2){.x = 0.0f, .y = 0.0f};
     camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.66f};
+    camera->cameraAngle = 0.f;
 }
 
 void TC_RenderFloorCeiling() {
+    void** writePixels;
+    int* writePitch;
 
-}
+    CFW_Texture* ceilingTexture = TC_GetCeilingTexture();
+    CFW_Texture* floorTexture = TC_GetFloorTexture();
+    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
 
-void TC_RenderWalls() {
-    SDL_FillRect(renderSurface, NULL, SDL_MapRGB(renderSurface->format, 255, 255, 255));
+    Vector2 rayDirection0;
+    Vector2 rayDirection1;
+    float screenWidthF = (float)screenSize.x;
+    float screenHeightF = (float)screenSize.y;
 
-    // Reset Post Processing
-    SDL_FillRect(fogSurface, NULL, SDL_MapRGBA(fogSurface->format, FOG_COLOR, 0));
-    SDL_FillRect(aoSurface, NULL, SDL_MapRGBA(aoSurface->format, AO_COLOR, 0));
 
-    // Load up the Camera data we need
-    Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
-    Vector2i screenSize = (Vector2i){.x = renderSurface->w, .y = renderSurface->h};
-    Vector2i mapSize = (Vector2i){.x = renderMapSize->x, .y = renderMapSize->y};
+    for (int y = screenSize.y/2; y < screenSize.y; y++) {
+        rayDirection0 = (Vector2){.x = camera->cameraDirection.x-camera->cameraPlane.x, .y = camera->cameraDirection.y-camera->cameraPlane.y};
+        rayDirection1 = (Vector2){.x = camera->cameraDirection.x+camera->cameraPlane.x, .y = camera->cameraDirection.y+camera->cameraPlane.y};
 
+        int currentY = y - screenHeightF / 2;
+        float cameraY = .5f * screenHeightF;
+        float lineDistance = cameraY/currentY;
+
+        Vector2 floorDist = (Vector2){.x = lineDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
+        Vector2 worldCoord = (Vector2){.x = camera->cameraPosition.x + lineDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineDistance * rayDirection0.y};
+
+        for (int x = 0; x < screenSize.x; x++) {
+            Vector2i mapCoord = (Vector2i){.x = (int)worldCoord.x, .y = (int)worldCoord.y};
+            Vector2i floorUV = (Vector2i){.x = (int)(floorTexture->w * (worldCoord.x-(float)mapCoord.x)) & (floorTexture->w-1), .y = (int)(floorTexture->h * (worldCoord.y-(float)mapCoord.y)) & (floorTexture->h-1)};
+            Vector2i ceilingUV = (Vector2i){.x = (int)(ceilingTexture->w * (worldCoord.x-(float)mapCoord.x)) & (ceilingTexture->w-1), .y = (int)(ceilingTexture->h * (worldCoord.y-(float)mapCoord.y)) & (ceilingTexture->h-1)};
+
+            worldCoord.x += floorDist.x;
+            worldCoord.y += floorDist.y;
+
+            Uint32 sampleColor;
+
+            sampleColor = ((Uint32*)floorTexture->surface->pixels)[floorUV.x + floorUV.y*floorTexture->w];
+            SDL_SetRenderDrawColor(mainRenderer, sampleColor&0xFF, sampleColor>>8&0xFF, sampleColor>>16&0xFF, sampleColor>>24&0xFF);
+            SDL_RenderDrawPoint(mainRenderer, x, y);
+
+            sampleColor = ((Uint32*)ceilingTexture->surface->pixels)[ceilingUV.x + ceilingUV.y*ceilingTexture->w];
+            SDL_SetRenderDrawColor(mainRenderer, sampleColor&0xFF, sampleColor>>8&0xFF, sampleColor>>16&0xFF, sampleColor>>24&0xFF);
+            SDL_RenderDrawPoint(mainRenderer, x, screenSize.y-y-1);
+        }
+    }
+
+    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
     for (int y = 0; y < screenSize.y; y++) {
-        SDL_Rect horizontalLine = (SDL_Rect){.x = 0, .y = y, .w = screenSize.x, .h = 1};
         float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
         float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
         fogStrength = clampFloat(fogStrength, 0.f, 1.f);
         fogStrength = invertFloat(fogStrength);
-        SDL_FillRect(fogSurface, &horizontalLine, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
+        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
+        SDL_RenderDrawLine(mainRenderer, 0, y, screenSize.x-1, y);
     }
+}
+
+void TC_RenderWalls() {
+    // Load up the Camera data we need
+    Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
+    Vector2i mapSize = (Vector2i){.x = renderMapSize->x, .y = renderMapSize->y};
 
     // Raycast for each pixel column
     for (int x = 0; x < screenSize.x; x++) {
@@ -185,7 +212,7 @@ void TC_RenderWalls() {
         aoStrength = invertFloat(aoStrength);
 
         // Fetch Tile Texture using found Map coords
-        SDL_Surface* targetTexture = TC_GetMapTexture(tileId);
+        CFW_Texture* targetTexture = TC_GetMapTexture(tileId);
         // Calculate Horizontal Texture pixel coord
         int textureX = (int)(wallX * (float)targetTexture->w);
         // Height of tile onscreen
@@ -195,27 +222,14 @@ void TC_RenderWalls() {
 
         // Starting point to draw onscreen
         int drawStart = -lineHeight/2+screenSize.y/2;
-        // Starting point to fetch column from texture
-        int fetchStart = 0;
-        // Clamp drawing start and push down fetching start
-        if (drawStart < 0) {
-            fetchStart = -drawStart * scaleRatio;
-            drawStart = 0;
-        }
         // Ending point to draw onscreen
         int drawEnd = lineHeight/2+screenSize.y/2;
-        // Ending point to fetch column from texture
-        int fetchEnd = targetTexture->h-1;
-        // Clamp drawing end and push up fetching end
-        if (drawEnd >= screenSize.y) {
-            fetchEnd = targetTexture->h-((drawEnd - screenSize.y) * scaleRatio);
-            drawEnd = screenSize.y-1;
-        }
 
         // Setup screen drawing rect
         SDL_Rect targetRect = (SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart};
         // Blit unshaded texture onto rendering surface
-        SDL_BlitScaled(targetTexture, &(SDL_Rect){.x = textureX, .y = fetchStart, .w = 1, .h = fetchEnd-fetchStart}, renderSurface, &targetRect);
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
+        SDL_RenderCopy(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect);
 
         // Calculate strength of environment color based on depth
         float fogStrength = (FOG_END - wallDepth)/(FOG_END-FOG_START);
@@ -223,12 +237,12 @@ void TC_RenderWalls() {
         fogStrength = clampFloat(fogStrength, 0.f, 1.f);
 
         // Draw Post Processing
-        SDL_FillRect(aoSurface, &targetRect, SDL_MapRGBA(aoSurface->format, AO_COLOR, (int)(aoStrength*255)));
-        SDL_FillRect(fogSurface, &targetRect, SDL_MapRGBA(fogSurface->format, FOG_COLOR, (int)(fogStrength*255)));
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(mainRenderer, AO_COLOR, (int)(aoStrength*255));
+        SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);
+        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
+        SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);
     }
-    // Apply Post Processing
-    SDL_BlitSurface(aoSurface, NULL, renderSurface, NULL);
-    SDL_BlitSurface(fogSurface, NULL, renderSurface, NULL);
 }
 
 RayCamera* TC_GetCamera() {

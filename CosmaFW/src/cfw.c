@@ -1,4 +1,6 @@
 #include "../include/cfw.h"
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
 
 const char* CFW_SDL_FAILED_MESSAGE = "oh no, can't start sdl :'(\nsdl error: ";
 const char* CFW_SDL_WINDOW_FAILED_MESSAGE = "oh no, can't create a window :'( \nsdl error: ";
@@ -33,6 +35,8 @@ int CFW_Kill(int exitCode) {
         nextWindow = currentWindow->next;
         if (nextWindow == currentWindow)
             nextWindow = NULL;
+        SDL_DestroyRenderer(currentWindow->renderer);
+        SDL_FreeSurface(currentWindow->surface);
         SDL_DestroyWindow(currentWindow->window);
         free(currentWindow);
         currentWindow = nextWindow;
@@ -76,8 +80,7 @@ CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int wi
             firstWindow->prev = newCWindow;
         }
         newCWindow->window = newWindow;
-        newCWindow->surface = SDL_GetWindowSurface(newWindow);
-        newCWindow->renderer = SDL_CreateRenderer(newWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        newCWindow->renderer = SDL_CreateRenderer(newWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
         return newCWindow;
     }
     return NULL;
@@ -91,6 +94,7 @@ void CFW_KillWindow(CFW_Window* window) {
             firstWindow = NULL;
         }
         SDL_DestroyRenderer(window->renderer);
+        SDL_FreeSurface(window->surface);
         SDL_DestroyWindow(window->window);
         free(window);
     }
@@ -112,7 +116,10 @@ CFW_Texture* CFW_CreateTexture(const char* path) {
         CFW_Texture* newCTexture = malloc(sizeof(CFW_Texture));
         newCTexture->surface = newSurface;
         newCTexture->texture = NULL;
+        newCTexture->w = newSurface->w;
+        newCTexture->h = newSurface->h;
         newCTexture->owners = 0;
+        return newCTexture;
     }
     return NULL;
 }
@@ -157,7 +164,7 @@ CFW_AnimTexture* CFW_CreateAnimTexture(const char* imagePath, const char* frameP
 
     if (!sourceTexture)
         return NULL;
-    
+
     SDL_Surface* sourceSurface = sourceTexture->surface;
     SDL_RWops* frameStream = SDL_RWFromFile(framePath, "r");
 
@@ -177,7 +184,7 @@ CFW_AnimTexture* CFW_CreateAnimTexture(const char* imagePath, const char* frameP
         frameCount = SDL_ReadBE16(frameStream);
     if (frameCount < 1)
         frameCount = 1;
-    
+
     CFW_Texture* frameSlots = malloc(sizeof(CFW_Texture) * frameCount);
     float* frameTimings = malloc(sizeof(float) * frameCount);
     void* sourcePixels = sourceSurface->pixels;
@@ -234,9 +241,9 @@ CFW_AngleTexture* CFW_CreateAngleTexture(const char* path, int angleCount) {
 
     if (!sourceTexture)
         return NULL;
-    
+
     SDL_Surface* sourceSurface = sourceTexture->surface;
-    
+
     CFW_Texture* angleSlots = malloc(sizeof(CFW_Texture) * angleCount);
     void* sourcePixels = sourceSurface->pixels;
     Uint32 sourceFormat = sourceSurface->format->format;
@@ -278,7 +285,7 @@ void CFW_DestroyAngleTexture(CFW_AngleTexture* texture) {
     int angleCount = texture->angleCount;
     for (int i = 0; i < angleCount; i++)
         CFW_DestroyTexture(&texture->angleSlots[i], false);
-    
+
     free(texture->angleSlots);
     free(texture);
 }
@@ -288,7 +295,7 @@ CFW_AnimAngleTexture* CFW_CreateAnimAngleTexture(const char* imagePath, const ch
 
     if (!sourceTexture)
         return NULL;
-    
+
     SDL_Surface* sourceSurface = sourceTexture->surface;
     SDL_RWops* frameStream = SDL_RWFromFile(framePath, "r");
 
@@ -308,7 +315,7 @@ CFW_AnimAngleTexture* CFW_CreateAnimAngleTexture(const char* imagePath, const ch
         frameCount = SDL_ReadBE16(frameStream);
     if (frameCount < 1)
         frameCount = 1;
-    
+
     CFW_Texture** frameSlots = malloc(sizeof(void*) * frameCount);
     float* frameTimings = malloc(sizeof(float) * frameCount);
     void* sourcePixels = sourceSurface->pixels;

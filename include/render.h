@@ -24,9 +24,10 @@ struct RayCamera {
     Vector2 cameraPosition;
     Vector2 cameraDirection;
     Vector2 cameraPlane;
+    float cameraAngle;
 };
 
-void TC_SetupRenderer(Vector2i* mapSizePointer, SDL_Surface* targetSurface);
+void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Texture* renderTexture);
 void TC_RenderFloorCeiling();
 void TC_RenderWalls();
 RayCamera* TC_GetCamera();

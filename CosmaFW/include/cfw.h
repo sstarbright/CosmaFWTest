@@ -28,10 +28,26 @@ typedef struct CFW_Color CFW_Color;
 typedef struct Vector2 Vector2;
 typedef struct Vector2i Vector2i;
 
+struct CFW_Color {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+
+struct Vector2 {
+    float x;
+    float y;
+};
+struct Vector2i {
+    int x;
+    int y;
+};
+
 struct CFW_Window {
     SDL_Window* window;
     SDL_Surface* surface;
     SDL_Renderer* renderer;
+    SDL_Texture* renderTarget;
     CFW_Window* next;
     CFW_Window* prev;
 };
@@ -39,6 +55,8 @@ struct CFW_Window {
 struct CFW_Texture {
     SDL_Texture* texture;
     SDL_Surface* surface;
+    int w;
+    int h;
     int owners;
 };
 struct CFW_AnimTexture {
@@ -55,21 +73,6 @@ struct CFW_AnimAngleTexture {
     int frameCount;
     int angleCount;
     float* frameTimings;
-};
-
-struct CFW_Color {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
-
-struct Vector2 {
-    float x;
-    float y;
-};
-struct Vector2i {
-    int x;
-    int y;
 };
 
 #define ADD_VECTOR2(a, b) (Vector2){.x = a.x+b.x, .y = a.y+b.y}
