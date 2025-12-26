@@ -7,6 +7,7 @@
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_video.h>
 
 CFW_Window* gameWindow = NULL;
 SDL_Texture* gameTexture = NULL;
@@ -15,7 +16,7 @@ RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
 
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
-    gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN);
+    gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_RaiseWindow(gameWindow->window);
     if (!gameWindow->renderer) {
         printf("NO RENDERER FOUND!!!\n");
@@ -30,6 +31,7 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
         printf("NO GAME RENDER TARGET!!!\n");
         return false;
     }
+
     TC_InitializeMap();
     TC_SetupRenderer(TC_GetMapSizePointer(), gameWindow, gameTexture);
     gameCamera = TC_GetCamera();

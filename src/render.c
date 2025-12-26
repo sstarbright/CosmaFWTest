@@ -10,7 +10,7 @@
 #define FAR_PLANE_DISTANCE 4.75f
 #define FOG_START -1.5f
 #define FOG_END 3.f
-#define FOG_COLOR 35, 0, 0
+#define FOG_COLOR 20, 12, 1
 #define AO_COLOR 40, 55, 0
 #define AO_SHARPNESS 2.f
 #define AO_BRIGHTNESS .1f
@@ -45,13 +45,11 @@ void TC_RenderFloorCeiling() {
 
     CFW_Texture* ceilingTexture = TC_GetCeilingTexture();
     CFW_Texture* floorTexture = TC_GetFloorTexture();
-    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
 
     Vector2 rayDirection0;
     Vector2 rayDirection1;
     float screenWidthF = (float)screenSize.x;
     float screenHeightF = (float)screenSize.y;
-
 
     for (int y = screenSize.y/2; y < screenSize.y; y++) {
         rayDirection0 = (Vector2){.x = camera->cameraDirection.x-camera->cameraPlane.x, .y = camera->cameraDirection.y-camera->cameraPlane.y};
@@ -72,26 +70,34 @@ void TC_RenderFloorCeiling() {
             worldCoord.x += floorDist.x;
             worldCoord.y += floorDist.y;
 
+            SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
+
             Uint32 sampleColor;
+            Uint8 redColor;
+            Uint8 greenColor;
+            Uint8 blueColor;
+            Uint8 alphaColor;
 
             sampleColor = ((Uint32*)floorTexture->surface->pixels)[floorUV.x + floorUV.y*floorTexture->w];
-            SDL_SetRenderDrawColor(mainRenderer, sampleColor&0xFF, sampleColor>>8&0xFF, sampleColor>>16&0xFF, sampleColor>>24&0xFF);
+            SDL_GetRGBA(sampleColor, floorTexture->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
+
+            SDL_SetRenderDrawColor(mainRenderer, redColor, greenColor, blueColor, alphaColor);
             SDL_RenderDrawPoint(mainRenderer, x, y);
 
             sampleColor = ((Uint32*)ceilingTexture->surface->pixels)[ceilingUV.x + ceilingUV.y*ceilingTexture->w];
-            SDL_SetRenderDrawColor(mainRenderer, sampleColor&0xFF, sampleColor>>8&0xFF, sampleColor>>16&0xFF, sampleColor>>24&0xFF);
+            SDL_GetRGBA(sampleColor, ceilingTexture->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
+            SDL_SetRenderDrawColor(mainRenderer, redColor, greenColor, blueColor, alphaColor);
             SDL_RenderDrawPoint(mainRenderer, x, screenSize.y-y-1);
         }
-    }
 
-    SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-    for (int y = 0; y < screenSize.y; y++) {
+        SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
         float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
         fogStrength = clampFloat(fogStrength, 0.f, 1.f);
         fogStrength = invertFloat(fogStrength);
         SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
         SDL_RenderDrawLine(mainRenderer, 0, y, screenSize.x-1, y);
+        SDL_RenderDrawLine(mainRenderer, 0, screenSize.y-y-1, screenSize.x-1, screenSize.y-y-1);
     }
 }
 
@@ -236,7 +242,7 @@ void TC_RenderWalls() {
         fogStrength = invertFloat(fogStrength);
         fogStrength = clampFloat(fogStrength, 0.f, 1.f);
 
-        // Draw Post Processing
+        // Draw FOG and AO
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(mainRenderer, AO_COLOR, (int)(aoStrength*255));
         SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);

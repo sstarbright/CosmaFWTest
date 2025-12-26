@@ -38,11 +38,11 @@ CFW_Texture* ceilingTexture;
 void TC_InitializeMap() {
     TC_ReverseMap();
     TC_GenerateAmbient();
-    mapTextures[0] = CFW_CreateTexture("assets/textures/1.png");
-    mapTextures[1] = CFW_CreateTexture("assets/textures/2.png");
-    mapTextures[2] = CFW_CreateTexture("assets/textures/3.png");
-    mapTextures[3] = CFW_CreateTexture("assets/textures/4.png");
-    mapTextures[4] = CFW_CreateTexture("assets/textures/5.png");
+    mapTextures[0] = CFW_CreateTexture("assets/textures/wall1.png");
+    mapTextures[1] = CFW_CreateTexture("assets/textures/wall1.png");
+    mapTextures[2] = CFW_CreateTexture("assets/textures/wall1.png");
+    mapTextures[3] = CFW_CreateTexture("assets/textures/wall1.png");
+    mapTextures[4] = CFW_CreateTexture("assets/textures/wall1.png");
 
     for (int x = 0; x < 5; x++) {
         CFW_ReqTexture(mapTextures[x]);
