@@ -8,12 +8,15 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_video.h>
+#include <math.h>
 
 CFW_Window* gameWindow = NULL;
 SDL_Texture* gameTexture = NULL;
 Vector2i gameResolution = (Vector2i){.x = 256, .y = 224};
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
+float bobTime = 0.f;
+bool movedThisFrame = false;
 
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
     gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
@@ -81,11 +84,13 @@ void TC_UpdateJoy(float deltaTime) {
     if(TC_KeyUp()) {
         targetPosition.x += turnX * moveSpeed;
         targetPosition.y += turnY * moveSpeed;
+        movedThisFrame = true;
     }
     if (TC_KeyDown())
     {
         targetPosition.x -= turnX * moveSpeed;
         targetPosition.y -= turnY * moveSpeed;
+        movedThisFrame = true;
     }
 
     if (!TC_CheckTilesWithinCircle(targetPosition, gamePlayer.radius)) {
@@ -116,6 +121,14 @@ void CFW_OnUpdate(float deltaTime) {
     SDL_SetRenderTarget(gameWindow->renderer, gameTexture);
     //SDL_SetRenderDrawColor(gameWindow->renderer, 255, 255, 255, 255);
     //SDL_RenderClear(gameWindow->renderer);
+
+    if (movedThisFrame) {
+        bobTime += deltaTime*15.f;
+        movedThisFrame = false;
+        float bobAmount = (sinf(bobTime)+1.f)/2.f;
+        bobAmount = flerp(-0.125f, .0f, bobAmount);
+        gameCamera->verticalOffset = bobAmount;
+    }
 
     TC_RenderFloorCeiling();
     TC_RenderWalls();

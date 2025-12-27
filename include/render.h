@@ -25,6 +25,8 @@ struct RayCamera {
     Vector2 cameraDirection;
     Vector2 cameraPlane;
     float cameraAngle;
+    float horizontalOffset;
+    float verticalOffset;
 };
 
 void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Texture* renderTexture);

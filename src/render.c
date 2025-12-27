@@ -5,13 +5,16 @@
 #include <SDL2/SDL_surface.h>
 #include <math.h>
 
-#define FLOOR_COLOR 64, 50, 0
-#define CEILING_COLOR 64, 64, 64
 #define FAR_PLANE_DISTANCE 4.75f
 #define FOG_START -1.5f
 #define FOG_END 3.f
 #define FOG_COLOR 20, 12, 1
-#define AO_COLOR 40, 55, 0
+#define AO_COLOR 30, 45, 0
+/*#define FOG_START 0.f
+#define FOG_END 5.f
+#define FOG_COLOR 30, 10, 1
+#define AO_COLOR 30, 30, 30*/
+
 #define AO_SHARPNESS 2.f
 #define AO_BRIGHTNESS .1f
 #define SCAN_DISTANCE 50
@@ -37,6 +40,8 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
     camera->cameraDirection = (Vector2){.x = 0.0f, .y = 0.0f};
     camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.66f};
     camera->cameraAngle = 0.f;
+    camera->horizontalOffset = 0.f;
+    camera->verticalOffset = 0.f;
 }
 
 void TC_RenderFloorCeiling() {
@@ -57,18 +62,24 @@ void TC_RenderFloorCeiling() {
 
         int currentY = y - screenHeightF / 2;
         float cameraY = .5f * screenHeightF;
-        float lineDistance = cameraY/currentY;
+        float lineFloorDistance = cameraY/currentY * (1.05f*camera->verticalOffset+1.f);
+        float lineCeilDistance = cameraY/currentY * (1.f-1.05f*camera->verticalOffset);
 
-        Vector2 floorDist = (Vector2){.x = lineDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
-        Vector2 worldCoord = (Vector2){.x = camera->cameraPosition.x + lineDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineDistance * rayDirection0.y};
+        Vector2 floorDist = (Vector2){.x = lineFloorDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineFloorDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
+        Vector2 ceilDist = (Vector2){.x = lineCeilDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineCeilDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
+        Vector2 worldFloorCoord = (Vector2){.x = camera->cameraPosition.x + lineFloorDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineFloorDistance * rayDirection0.y};
+        Vector2 worldCeilCoord = (Vector2){.x = camera->cameraPosition.x + lineCeilDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineCeilDistance * rayDirection0.y};
 
         for (int x = 0; x < screenSize.x; x++) {
-            Vector2i mapCoord = (Vector2i){.x = (int)worldCoord.x, .y = (int)worldCoord.y};
-            Vector2i floorUV = (Vector2i){.x = (int)(floorTexture->w * (worldCoord.x-(float)mapCoord.x)) & (floorTexture->w-1), .y = (int)(floorTexture->h * (worldCoord.y-(float)mapCoord.y)) & (floorTexture->h-1)};
-            Vector2i ceilingUV = (Vector2i){.x = (int)(ceilingTexture->w * (worldCoord.x-(float)mapCoord.x)) & (ceilingTexture->w-1), .y = (int)(ceilingTexture->h * (worldCoord.y-(float)mapCoord.y)) & (ceilingTexture->h-1)};
+            Vector2i mapFloorCoord = (Vector2i){.x = (int)worldFloorCoord.x, .y = (int)worldFloorCoord.y};
+            Vector2i mapCeilCoord = (Vector2i){.x = (int)worldCeilCoord.x, .y = (int)worldCeilCoord.y};
+            Vector2i floorUV = (Vector2i){.x = (int)(floorTexture->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (floorTexture->w-1), .y = (int)(floorTexture->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (floorTexture->h-1)};
+            Vector2i ceilingUV = (Vector2i){.x = (int)(ceilingTexture->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (ceilingTexture->w-1), .y = (int)(ceilingTexture->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (ceilingTexture->h-1)};
 
-            worldCoord.x += floorDist.x;
-            worldCoord.y += floorDist.y;
+            worldFloorCoord.x += floorDist.x;
+            worldFloorCoord.y += floorDist.y;
+            worldCeilCoord.x += ceilDist.x;
+            worldCeilCoord.y += ceilDist.y;
 
             SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
 
@@ -227,9 +238,9 @@ void TC_RenderWalls() {
         float scaleRatio = (float)targetTexture->h/(float)lineHeight;
 
         // Starting point to draw onscreen
-        int drawStart = -lineHeight/2+screenSize.y/2;
+        int drawStart = (int)(-lineHeight/2+screenSize.y/2)+(camera->verticalOffset*lineHeight*.5f);
         // Ending point to draw onscreen
-        int drawEnd = lineHeight/2+screenSize.y/2;
+        int drawEnd = (int)(lineHeight/2+screenSize.y/2)+(camera->verticalOffset*lineHeight*.5f);
 
         // Setup screen drawing rect
         SDL_Rect targetRect = (SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart};

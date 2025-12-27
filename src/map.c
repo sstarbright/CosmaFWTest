@@ -42,7 +42,7 @@ void TC_InitializeMap() {
     mapTextures[1] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[2] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[3] = CFW_CreateTexture("assets/textures/wall1.png");
-    mapTextures[4] = CFW_CreateTexture("assets/textures/wall1.png");
+    mapTextures[4] = CFW_CreateTexture("assets/textures/5.png");
 
     for (int x = 0; x < 5; x++) {
         CFW_ReqTexture(mapTextures[x]);
