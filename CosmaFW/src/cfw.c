@@ -382,8 +382,16 @@ void CFW_DestroyAnimAngleTexture(CFW_AnimAngleTexture* texture) {
     free(texture);
 }
 
+float fsign(float value) {
+    return signbit(value) == 0 ? 1.f : -1.f;
+}
+
 float flerp(float from, float to, float weight) {
     return from + (to - from) * weight;
+}
+
+float ftoward(float from, float to, float delta) {
+    return fabs(to - from) <= delta ? to : (from + fsign(to - from) * delta);
 }
 
 int main(int argumentCount, char* arguments[]) {

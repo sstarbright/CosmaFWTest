@@ -16,6 +16,9 @@ Vector2i gameResolution = (Vector2i){.x = 256, .y = 224};
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
 float bobTime = 0.f;
+float sideTime = 0.f;
+float baseBobTime = 0.f;
+float baseSideTime = 0.f;
 bool movedThisFrame = false;
 
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
@@ -42,6 +45,9 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
     gamePlayer.direction = (Vector2){.x = -1.0f, .y = 0.0f};
     gamePlayer.radius = 0.25;
+
+    baseBobTime = asin(1.f);
+    baseSideTime = asin(0.f);
 
     return true;
 }
@@ -123,11 +129,24 @@ void CFW_OnUpdate(float deltaTime) {
     //SDL_RenderClear(gameWindow->renderer);
 
     if (movedThisFrame) {
-        bobTime += deltaTime*15.f;
         movedThisFrame = false;
+
+        bobTime += deltaTime*15.f;
         float bobAmount = (sinf(bobTime)+1.f)/2.f;
         bobAmount = flerp(-0.125f, .0f, bobAmount);
         gameCamera->verticalOffset = bobAmount;
+
+
+        sideTime += deltaTime*7.5f;
+        float sideAmount = sinf(sideTime);
+        sideAmount = flerp(-.025f, .025f, sideAmount);
+        gameCamera->horizontalOffset = sideAmount;
+    } else {
+        bobTime = baseBobTime;
+        sideTime = baseSideTime;
+        gameCamera->verticalOffset = ftoward(gameCamera->verticalOffset, .0f, deltaTime*1.f);
+
+        gameCamera->horizontalOffset = ftoward(gameCamera->horizontalOffset, .0f, deltaTime*2.f);
     }
 
     TC_RenderFloorCeiling();

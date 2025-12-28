@@ -146,7 +146,11 @@ CFW_AnimAngleTexture* CFW_CreateAnimAngleTexture(const char* imagePath, const ch
 // Destroy an Animation Angle Texture
 void CFW_DestroyAnimAngleTexture(CFW_AnimAngleTexture* texture);
 
+float fsign(float value);
+
 // Linear interpolate a floating point weight
 float flerp(float from, float to, float weight);
+
+float ftoward(float from, float to, float delta);
 
 #endif

@@ -40,7 +40,7 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
     camera->cameraDirection = (Vector2){.x = 0.0f, .y = 0.0f};
     camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.66f};
     camera->cameraAngle = 0.f;
-    camera->horizontalOffset = 0.f;
+    camera->horizontalOffset = .2f;
     camera->verticalOffset = 0.f;
 }
 
@@ -55,6 +55,8 @@ void TC_RenderFloorCeiling() {
     Vector2 rayDirection1;
     float screenWidthF = (float)screenSize.x;
     float screenHeightF = (float)screenSize.y;
+    Vector2 horizontalOffset = (Vector2){.x = camera->cameraPlane.x * camera->horizontalOffset, .y =  camera->cameraPlane.y * camera->horizontalOffset};
+    Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x+horizontalOffset.x, .y = camera->cameraPosition.y+horizontalOffset.y};
 
     for (int y = screenSize.y/2; y < screenSize.y; y++) {
         rayDirection0 = (Vector2){.x = camera->cameraDirection.x-camera->cameraPlane.x, .y = camera->cameraDirection.y-camera->cameraPlane.y};
@@ -67,8 +69,8 @@ void TC_RenderFloorCeiling() {
 
         Vector2 floorDist = (Vector2){.x = lineFloorDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineFloorDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
         Vector2 ceilDist = (Vector2){.x = lineCeilDistance * (rayDirection1.x-rayDirection0.x) / screenWidthF, .y = lineCeilDistance * (rayDirection1.y-rayDirection0.y) / screenWidthF};
-        Vector2 worldFloorCoord = (Vector2){.x = camera->cameraPosition.x + lineFloorDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineFloorDistance * rayDirection0.y};
-        Vector2 worldCeilCoord = (Vector2){.x = camera->cameraPosition.x + lineCeilDistance * rayDirection0.x, .y = camera->cameraPosition.y + lineCeilDistance * rayDirection0.y};
+        Vector2 worldFloorCoord = (Vector2){.x = cameraPos.x + lineFloorDistance * rayDirection0.x, .y = cameraPos.y + lineFloorDistance * rayDirection0.y};
+        Vector2 worldCeilCoord = (Vector2){.x = cameraPos.x + lineCeilDistance * rayDirection0.x, .y = cameraPos.y + lineCeilDistance * rayDirection0.y};
 
         for (int x = 0; x < screenSize.x; x++) {
             Vector2i mapFloorCoord = (Vector2i){.x = (int)worldFloorCoord.x, .y = (int)worldFloorCoord.y};
@@ -114,7 +116,8 @@ void TC_RenderFloorCeiling() {
 
 void TC_RenderWalls() {
     // Load up the Camera data we need
-    Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
+    Vector2 horizontalOffset = (Vector2){.x = camera->cameraPlane.x * camera->horizontalOffset, .y =  camera->cameraPlane.y * camera->horizontalOffset};
+    Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x+horizontalOffset.x, .y = camera->cameraPosition.y+horizontalOffset.y};
     Vector2i mapSize = (Vector2i){.x = renderMapSize->x, .y = renderMapSize->y};
 
     // Raycast for each pixel column
@@ -128,7 +131,7 @@ void TC_RenderWalls() {
         // Map distance to travel for every scan
         Vector2i travelMap = (Vector2i){.x = 0, .y = 0};
         // Distance travelled so far
-        Vector2 totalDist = (Vector2){.x = camera->cameraPosition.x, .y = camera->cameraPosition.y};
+        Vector2 totalDist = (Vector2){.x = cameraPos.x, .y = cameraPos.y};
         // Current Map coordinate
         Vector2i mapCoord = (Vector2i){.x = (int)cameraPos.x, .y = (int)cameraPos.y};
         int totalScans = 0;
