@@ -48,6 +48,8 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
 void TC_RenderFloorCeiling() {
     SDL_SetRenderTarget(mainRenderer, viewRenderTexture);
 
+    float verticalFogOffset = camera->verticalOffset * .5f;
+
     void** writePixels;
     int* writePitch;
 
@@ -109,10 +111,17 @@ void TC_RenderFloorCeiling() {
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
         float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
-        fogStrength = clampFloat(fogStrength, 0.f, 1.f);
-        fogStrength = invertFloat(fogStrength);
-        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
+
+        float floorFogStrength = fogStrength - verticalFogOffset;
+        floorFogStrength = clampFloat(floorFogStrength, 0.f, 1.f);
+        floorFogStrength = invertFloat(floorFogStrength);
+        float ceilFogStrength = fogStrength + verticalFogOffset;
+        ceilFogStrength = clampFloat(ceilFogStrength, 0.f, 1.f);
+        ceilFogStrength = invertFloat(ceilFogStrength);
+
+        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(floorFogStrength*255));
         SDL_RenderDrawLine(mainRenderer, 0, y, screenSize.x-1, y);
+        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(ceilFogStrength*255));
         SDL_RenderDrawLine(mainRenderer, 0, screenSize.y-y-1, screenSize.x-1, screenSize.y-y-1);
     }
 }
