@@ -62,6 +62,18 @@ int CFW_End(int exitCode) {
     }
     return exitCode;
 }
+void CFW_WindowResize() {
+    CFW_Window* currentWindow = firstWindow;
+    CFW_Window* nextWindow;
+    do {
+        nextWindow = currentWindow->next;
+
+        if (currentWindow->surface)
+            currentWindow->surface = SDL_GetWindowSurface(currentWindow->window);
+
+        currentWindow = nextWindow;
+    } while(currentWindow != firstWindow);
+}
 
 CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 windowFlags, bool accelerated, Uint32 renderFlags) {
     if (SDL_WasInit(SDL_INIT_VIDEO)&SDL_INIT_VIDEO) {
@@ -619,10 +631,14 @@ int main(int argumentCount, char* arguments[]) {
                     break;
                 #endif
                 case SDL_WINDOWEVENT:
-                    #ifndef CFW_EVENT_WINDOWEVENT
-                    if (((SDL_WindowEvent*)&event)->event == SDL_WINDOWEVENT_CLOSE)
-                        isQuit = true;
-                    #endif
+                    switch (((SDL_WindowEvent*)&event)->event) {
+                        case SDL_WINDOWEVENT_CLOSE:
+                            isQuit = true;
+                            break;
+                        case SDL_WINDOWEVENT_RESIZED:
+                            CFW_WindowResize();
+                            break;
+                    }
                     #ifdef CFW_EVENT_WINDOWEVENT
                     CFW_WindowEvent(&event, deltaTime);
                     #endif
