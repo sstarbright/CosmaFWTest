@@ -1,6 +1,7 @@
 #include "../include/cfw.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_video.h>
 
 const char* CFW_SDL_FAILED_MESSAGE = "oh no, can't start sdl :'(\nsdl error: ";
 const char* CFW_SDL_WINDOW_FAILED_MESSAGE = "oh no, can't create a window :'( \nsdl error: ";
@@ -10,6 +11,7 @@ const char* CFW_SDL_FILE_FAILED_MESSAGE = "oh no, can't load a file :'( \nsdl er
 
 // First window in the CFW_Window linked list
 CFW_Window* firstWindow = NULL;
+SDL_Renderer* textureRenderer = NULL;
 bool isQuit = false;
 bool isEnd = false;
 int endCode = 0;
@@ -35,6 +37,12 @@ int CFW_Kill(int exitCode) {
         nextWindow = currentWindow->next;
         if (nextWindow == currentWindow)
             nextWindow = NULL;
+        else {
+            if (currentWindow->prev)
+                currentWindow->prev->next = NULL;
+            if (nextWindow)
+                nextWindow->prev = NULL;
+        }
         SDL_DestroyRenderer(currentWindow->renderer);
         SDL_FreeSurface(currentWindow->surface);
         SDL_DestroyWindow(currentWindow->window);
@@ -55,9 +63,9 @@ int CFW_End(int exitCode) {
     return exitCode;
 }
 
-CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 flags) {
+CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 windowFlags, bool accelerated, Uint32 renderFlags) {
     if (SDL_WasInit(SDL_INIT_VIDEO)&SDL_INIT_VIDEO) {
-        SDL_Window* newWindow = SDL_CreateWindow(title, windowX, windowY, windowWidth, windowHeight, flags);
+        SDL_Window* newWindow = SDL_CreateWindow(title, windowX, windowY, windowWidth, windowHeight, windowFlags);
 
         if (!newWindow) {
             const char* error = SDL_GetError();
@@ -80,7 +88,15 @@ CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int wi
             firstWindow->prev = newCWindow;
         }
         newCWindow->window = newWindow;
-        newCWindow->renderer = SDL_CreateRenderer(newWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+        if (accelerated) {
+            newCWindow->surface = NULL;
+            newCWindow->renderer = SDL_CreateRenderer(newWindow, -1, renderFlags);
+            textureRenderer = newCWindow->renderer;
+        }
+        else {
+            newCWindow->renderer = NULL;
+            newCWindow->surface = SDL_GetWindowSurface(newWindow);
+        }
         return newCWindow;
     }
     return NULL;
@@ -93,8 +109,10 @@ void CFW_KillWindow(CFW_Window* window) {
         } else {
             firstWindow = NULL;
         }
-        SDL_DestroyRenderer(window->renderer);
-        SDL_FreeSurface(window->surface);
+        if (window->renderer)
+            SDL_DestroyRenderer(window->renderer);
+        if (window->surface)
+            SDL_FreeSurface(window->surface);
         SDL_DestroyWindow(window->window);
         free(window);
     }
@@ -135,7 +153,7 @@ void CFW_DestroyTexture(CFW_Texture* texture, bool individual) {
 }
 void CFW_ReqTexture(CFW_Texture* texture) {
     if (texture->owners == 0) {
-        SDL_Texture* loadedTexture = SDL_CreateTextureFromSurface(firstWindow->renderer, (SDL_Surface*)texture->surface);
+        SDL_Texture* loadedTexture = SDL_CreateTextureFromSurface(textureRenderer, (SDL_Surface*)texture->surface);
 
         if (!loadedTexture) {
             const char* error = SDL_GetError();
@@ -568,7 +586,7 @@ int main(int argumentCount, char* arguments[]) {
                 #endif
                 case SDL_QUIT:
                     #ifdef CFW_EVENT_QUIT
-                    if (CFW_Quit(&event));
+                    if (CFW_Quit(&event))
                         isQuit = true;
                     #endif
                     #ifndef CFW_EVENT_QUIT
@@ -600,11 +618,15 @@ int main(int argumentCount, char* arguments[]) {
                     CFW_UserEvent(&event, deltaTime);
                     break;
                 #endif
-                #ifdef CFW_EVENT_WINDOWEVENT
                 case SDL_WINDOWEVENT:
+                    #ifndef CFW_EVENT_WINDOWEVENT
+                    if (((SDL_WindowEvent*)&event)->event == SDL_WINDOWEVENT_CLOSE)
+                        isQuit = true;
+                    #endif
+                    #ifdef CFW_EVENT_WINDOWEVENT
                     CFW_WindowEvent(&event, deltaTime);
+                    #endif
                     break;
-                #endif
             }
         }
 

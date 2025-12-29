@@ -80,6 +80,7 @@ struct CFW_AnimAngleTexture {
 
 #define invertFloat(floatToInvert) 1.f - floatToInvert
 #define clampFloat(floatToClamp, min, max) floatToClamp < min ? min : (floatToClamp > max ? max : floatToClamp)
+#define stepFloat(floatToStep, stepCount) floor(floatToStep/stepCount)*stepCount
 
 // Initializes CosmaFW
 // Prints a message box on SDL failure
@@ -109,7 +110,7 @@ void CFW_OnEnd(int exitCode);
 // Creates an SDL Window and adds it to a linked list
 // Prints a message box on Window failure
 // Don't worry about killing windows when "CFW_End()"ing your game
-CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 flags);
+CFW_Window* CFW_CreateWindow(const char* title, int windowX, int windowY, int windowWidth, int windowHeight, Uint32 windowFlags, bool accelerated, Uint32 renderFlags);
 
 // Kills an SDL Window
 // Removes it from CFW's window linked list, destroys the SDL Window, and frees itself

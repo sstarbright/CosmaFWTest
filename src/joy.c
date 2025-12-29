@@ -4,6 +4,7 @@ bool isKeyUp = false;
 bool isKeyDown = false;
 bool isKeyLeft = false;
 bool isKeyRight = false;
+bool isKeyShift = false;
 
 void CFW_KeyDown(SDL_Event* event, float deltaTime) {
     switch(event->key.keysym.sym) {
@@ -18,6 +19,9 @@ void CFW_KeyDown(SDL_Event* event, float deltaTime) {
             break;
         case SDLK_RIGHT:
             isKeyRight = true;
+            break;
+        case SDLK_LSHIFT:
+            isKeyShift = true;
             break;
     }
 }
@@ -36,6 +40,9 @@ void CFW_KeyUp(SDL_Event* event, float deltaTime) {
         case SDLK_RIGHT:
             isKeyRight = false;
             break;
+        case SDLK_LSHIFT:
+            isKeyShift = false;
+            break;
     }
 }
 
@@ -50,4 +57,7 @@ bool TC_KeyLeft() {
 }
 bool TC_KeyRight() {
     return isKeyRight;
+}
+bool TC_KeyShift() {
+    return isKeyShift;
 }

@@ -10,9 +10,20 @@
 #include <SDL2/SDL_video.h>
 #include <math.h>
 
+#define GAME_SCREEN_X 256
+#define GAME_SCREEN_Y 224
+#define GAME_PIXEL_FORMAT SDL_PIXELFORMAT_RGB555
+
 CFW_Window* gameWindow = NULL;
+CFW_Window* viewWindow = NULL;
 SDL_Texture* gameTexture = NULL;
-Vector2i gameResolution = (Vector2i){.x = 256, .y = 224};
+SDL_Surface* gameSurface;
+
+Vector2i gameResolution = (Vector2i){.x = GAME_SCREEN_X, .y = GAME_SCREEN_Y};
+int gamePixelBpp = SDL_BITSPERPIXEL(GAME_PIXEL_FORMAT);
+int gamePixelBypp = SDL_BYTESPERPIXEL(GAME_PIXEL_FORMAT);
+SDL_PixelFormat* pixelFormat;
+
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
 float bobTime = 0.f;
@@ -20,26 +31,43 @@ float sideTime = 0.f;
 float baseBobTime = 0.f;
 float baseSideTime = 0.f;
 bool movedThisFrame = false;
+float moveSpeed = .0f;
 
 bool CFW_OnStart(int argumentCount, char* arguments[]) {
-    gameWindow = CFW_CreateWindow("CosmaFW Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1440, 1080, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    gameWindow = CFW_CreateWindow("CosmaFW Test",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        1440, 1080,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
+        false,
+        0
+    );
+    viewWindow = CFW_CreateWindow("RENDERER",
+        0, 0,
+        gameResolution.x, gameResolution.y,
+        SDL_WINDOW_HIDDEN,
+        true,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE
+    );
+    pixelFormat = SDL_AllocFormat(GAME_PIXEL_FORMAT);
+    gameSurface = SDL_CreateRGBSurface(0, gameResolution.x, gameResolution.y, pixelFormat->BitsPerPixel, pixelFormat->Rmask, pixelFormat->Gmask, pixelFormat->Bmask, pixelFormat->Amask);
+
     SDL_RaiseWindow(gameWindow->window);
-    if (!gameWindow->renderer) {
+    if (!viewWindow->renderer) {
         printf("NO RENDERER FOUND!!!\n");
         return false;
     }
-    if (SDL_RenderTargetSupported(gameWindow->renderer) != SDL_TRUE) {
+    if (SDL_RenderTargetSupported(viewWindow->renderer) != SDL_TRUE) {
         printf("CANNOT RENDER TO TARGET TEXTURE!!!\n");
         return false;
     }
-    gameTexture = SDL_CreateTexture(gameWindow->renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_TARGET, gameResolution.x, gameResolution.y);
+    gameTexture = SDL_CreateTexture(viewWindow->renderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_TARGET, gameResolution.x, gameResolution.y);
     if (!gameTexture) {
         printf("NO GAME RENDER TARGET!!!\n");
         return false;
     }
 
     TC_InitializeMap();
-    TC_SetupRenderer(TC_GetMapSizePointer(), gameWindow, gameTexture);
+    TC_SetupRenderer(TC_GetMapSizePointer(), viewWindow, gameTexture);
     gameCamera = TC_GetCamera();
 
     gamePlayer.position = (Vector2){.x = 9.5f, .y = 9.5f};
@@ -61,7 +89,8 @@ void TC_UpdateJoy(float deltaTime) {
     float planeY = gameCamera->cameraPlane.y;
     float lookAngle = gameCamera->cameraAngle;
 
-    float moveSpeed = deltaTime * 5.0;
+    moveSpeed = TC_KeyShift() ? 3.75f : 2.5f;
+    float moveDelta = deltaTime * moveSpeed;
     float rotSpeed = deltaTime * 3.0;
 
     if (TC_KeyRight())
@@ -88,14 +117,14 @@ void TC_UpdateJoy(float deltaTime) {
     Vector2 targetPosition = (Vector2){.x = playerX, .y = playerY};
 
     if(TC_KeyUp()) {
-        targetPosition.x += turnX * moveSpeed;
-        targetPosition.y += turnY * moveSpeed;
+        targetPosition.x += turnX * moveDelta;
+        targetPosition.y += turnY * moveDelta;
         movedThisFrame = true;
     }
     if (TC_KeyDown())
     {
-        targetPosition.x -= turnX * moveSpeed;
-        targetPosition.y -= turnY * moveSpeed;
+        targetPosition.x -= turnX * moveDelta;
+        targetPosition.y -= turnY * moveDelta;
         movedThisFrame = true;
     }
 
@@ -124,47 +153,46 @@ void TC_UpdateJoy(float deltaTime) {
 void CFW_OnUpdate(float deltaTime) {
     TC_UpdateJoy(deltaTime);
 
-    SDL_SetRenderTarget(gameWindow->renderer, gameTexture);
-    //SDL_SetRenderDrawColor(gameWindow->renderer, 255, 255, 255, 255);
-    //SDL_RenderClear(gameWindow->renderer);
+    SDL_SetRenderTarget(viewWindow->renderer, gameTexture);
+    SDL_SetRenderDrawColor(viewWindow->renderer, 50, 50, 50, 255);
+    SDL_RenderClear(viewWindow->renderer);
 
     if (movedThisFrame) {
         movedThisFrame = false;
 
-        bobTime += deltaTime*15.f;
+        bobTime += deltaTime*3.75f*moveSpeed;
         float bobAmount = (sinf(bobTime)+1.f)/2.f;
-        bobAmount = flerp(-0.125f, .0f, bobAmount);
+        bobAmount = flerp(-0.1f, .0f, bobAmount);
         gameCamera->verticalOffset = bobAmount;
 
 
-        sideTime += deltaTime*7.5f;
+        sideTime += deltaTime*1.75f*moveSpeed;
         float sideAmount = sinf(sideTime);
-        sideAmount = flerp(-.025f, .025f, sideAmount);
+        sideAmount = flerp(-.0275f, .0275f, sideAmount);
         gameCamera->horizontalOffset = sideAmount;
     } else {
         bobTime = baseBobTime;
         sideTime = baseSideTime;
-        gameCamera->verticalOffset = ftoward(gameCamera->verticalOffset, .0f, deltaTime*1.f);
-
-        gameCamera->horizontalOffset = ftoward(gameCamera->horizontalOffset, .0f, deltaTime*2.f);
+        gameCamera->verticalOffset = ftoward(gameCamera->verticalOffset, .0f, deltaTime*moveSpeed*.2f);
+        gameCamera->horizontalOffset = ftoward(gameCamera->horizontalOffset, .0f, deltaTime*moveSpeed*.4f);
     }
 
     TC_RenderFloorCeiling();
     TC_RenderWalls();
+    TC_RenderViewport();
 
-    int windowWidth = 0;
-    int windowHeight = 0;
-
-    SDL_GetWindowSizeInPixels(gameWindow->window, &windowWidth, &windowHeight);
-
-    SDL_SetRenderTarget(gameWindow->renderer, NULL);
+    SDL_SetRenderTarget(viewWindow->renderer, gameTexture);
     // Update Window
-    SDL_RenderCopy(gameWindow->renderer, gameTexture, NULL, NULL);
-    SDL_RenderPresent(gameWindow->renderer);
+    SDL_RenderReadPixels(viewWindow->renderer, NULL, GAME_PIXEL_FORMAT, gameSurface->pixels, gameSurface->pitch);
+    SDL_RenderPresent(viewWindow->renderer);
+    SDL_BlitScaled(gameSurface, NULL, gameWindow->surface, NULL);
+    SDL_UpdateWindowSurface(gameWindow->window);
 }
 
 void CFW_OnEnd(int exitCode) {
+    SDL_FreeFormat(pixelFormat);
     SDL_DestroyTexture(gameTexture);
+    SDL_FreeSurface(gameSurface);
     TC_FreeMap();
     TC_CloseRenderer();
 }

@@ -23,7 +23,9 @@
 Vector2i* renderMapSize;
 SDL_Renderer* mainRenderer;
 SDL_Texture* mainRenderTexture;
-Vector2i screenSize;
+SDL_Texture* viewRenderTexture;
+Vector2i screenSize = (Vector2i){.x = 244, .y = 160};
+SDL_Rect viewportRect;
 
 RayCamera* camera;
 
@@ -31,9 +33,8 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
     renderMapSize = mapSizePointer;
     mainRenderer = targetWindow->renderer;
     mainRenderTexture = renderTexture;
-
-    SDL_SetRenderTarget(mainRenderer, mainRenderTexture);
-    SDL_RenderGetLogicalSize(mainRenderer, &(screenSize.x), &(screenSize.y));
+    viewRenderTexture = SDL_CreateTexture(mainRenderer, SDL_PIXELFORMAT_RGB332, SDL_TEXTUREACCESS_TARGET, screenSize.x, screenSize.y);
+    viewportRect = (SDL_Rect){.x = 6, .y = 6, .w = screenSize.x, .h = screenSize.y};
 
     camera = malloc(sizeof(RayCamera));
     camera->cameraPosition = (Vector2){.x = 0.0f, .y = 0.0f};
@@ -45,6 +46,8 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
 }
 
 void TC_RenderFloorCeiling() {
+    SDL_SetRenderTarget(mainRenderer, viewRenderTexture);
+
     void** writePixels;
     int* writePitch;
 
@@ -263,6 +266,11 @@ void TC_RenderWalls() {
         SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
         SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);
     }
+}
+
+void TC_RenderViewport() {
+    SDL_SetRenderTarget(mainRenderer, mainRenderTexture);
+    SDL_RenderCopy(mainRenderer, viewRenderTexture, NULL, &viewportRect);
 }
 
 RayCamera* TC_GetCamera() {
