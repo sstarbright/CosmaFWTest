@@ -9,7 +9,7 @@
 #define FOG_START -2.f
 #define FOG_END 4.f
 #define FOG_COLOR 20, 12, 1
-#define AO_COLOR 30, 45, 0
+#define AO_COLOR 20, 35, 0
 /*#define FOG_START 0.f
 #define FOG_END 5.f
 #define FOG_COLOR 30, 10, 1
@@ -81,23 +81,35 @@ void TC_RenderFloorCeiling() {
 
         for (int x = 0; x < screenSize.x; x++) {
             Vector2i mapFloorCoord = (Vector2i){.x = (int)worldFloorCoord.x, .y = (int)worldFloorCoord.y};
-            int tileFloorFlags = TC_GetMapFlags(mapFloorCoord.x, mapFloorCoord.y);
-            bool paintFloor = TC_CHECKIFPAINTFLOOR(tileFloorFlags);
-            if (paintFloor)
+            int tileFlags = TC_GetMapFlags(mapFloorCoord.x, mapFloorCoord.y);
+            bool drawDecal = TC_CHECKIFPAINTFLOOR(tileFlags);
+            bool reverseFloorU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
+            bool reverseFloorV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
+            if (drawDecal)
                 currentFloor = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
             else
                 currentFloor = floorTexture;
 
             Vector2i mapCeilCoord = (Vector2i){.x = (int)worldCeilCoord.x, .y = (int)worldCeilCoord.y};
-            int tileCeilFlags = TC_GetMapFlags(mapCeilCoord.x, mapCeilCoord.y);
-            bool paintCeiling = TC_CHECKIFPAINTCEILING(tileCeilFlags);
-            if (paintCeiling)
+            tileFlags = TC_GetMapFlags(mapCeilCoord.x, mapCeilCoord.y);
+            drawDecal = TC_CHECKIFPAINTCEILING(tileFlags);
+            bool reverseCeilingU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
+            bool reverseCeilingV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
+            if (drawDecal)
                 currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapCeilCoord.x, (int)mapCeilCoord.y));
             else
                 currentCeiling = ceilingTexture;
 
             Vector2i floorUV = (Vector2i){.x = (int)(currentFloor->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (currentFloor->w-1), .y = (int)(currentFloor->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (currentFloor->h-1)};
+            if (reverseFloorU)
+                floorUV.x = currentFloor->w-1-floorUV.x;
+            if (reverseFloorV)
+                floorUV.y = currentFloor->h-1-floorUV.y;
             Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
+            if (reverseCeilingU)
+                ceilingUV.x = currentCeiling->w-1-ceilingUV.x;
+            if (reverseCeilingV)
+                ceilingUV.y = currentCeiling->h-1-ceilingUV.y;
 
             worldFloorCoord.x += floorDist.x;
             worldFloorCoord.y += floorDist.y;
@@ -184,10 +196,10 @@ void TC_RenderWalls() {
 
         // North/South Plane or East/West Plane
         int facePlane;
+        // Map tile flags
+        int tileFlags = 0;
 
         if (showFakeWalls) {
-            // Map tile flags
-            int tileFlags = 0;
 
             // Digital Differential Analysis
             while (!TC_CHECKIFPAINTWALL(tileFlags) && totalScans < SCAN_DISTANCE) {
@@ -209,8 +221,6 @@ void TC_RenderWalls() {
             if (!TC_CHECKIFPAINTWALL(tileFlags))
                 continue;
         } else {
-            // Map tile flags
-            int tileFlags = 0;
             // Map tile collision
             int tileCollide = 0;
 
@@ -235,6 +245,9 @@ void TC_RenderWalls() {
             if (TC_CHECKIFPAINTWALL(tileFlags) || tileCollide == 0)
                 continue;
         }
+
+        bool reverseU = (tileFlags & TILEFLAG_MIRRORU) > 0;
+        bool reverseV = (tileFlags & TILEFLAG_MIRRORV) > 0;
 
         // Distance from detected wall to camera
         float wallDepth = (facePlane == 0) ? (totalDist.x - travelDist.x) : (totalDist.y - travelDist.y);
@@ -261,14 +274,20 @@ void TC_RenderWalls() {
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // North face uses corners in slots 0 and 1
                 applyAmbient(2, 1)
-                // Reverse texture coord
-                wallX = invertFloat(wallX);
+                if (!reverseU) {
+                    // Reverse texture coord
+                    wallX = invertFloat(wallX);
+                }
             } else {
                 // South
                 visibleFace = 2;
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // South face uses corners in slots 2 and 3
                 applyAmbient(4, 8)
+                if (reverseU) {
+                    // Reverse texture coord
+                    wallX = invertFloat(wallX);
+                }
             }
         }
         else if(facePlane == 1) {
@@ -278,14 +297,20 @@ void TC_RenderWalls() {
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // East face uses corners in slots 1 and 2
                 applyAmbient(4, 2)
-                // Reverse texture coord
-                wallX = invertFloat(wallX);
+                if (!reverseU) {
+                    // Reverse texture coord
+                    wallX = invertFloat(wallX);
+                }
             } else {
                 // West
                 visibleFace = 3;
                 // Check for Ambient Occlusion data, calculate and apply it if present
                 // East face uses corners in slots 0 and 3
                 applyAmbient(8, 1)
+                if (reverseU) {
+                    // Reverse texture coord
+                    wallX = invertFloat(wallX);
+                }
             }
         }
         aoStrength = invertFloat(aoStrength);
@@ -308,7 +333,10 @@ void TC_RenderWalls() {
         SDL_Rect targetRect = (SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart};
         // Blit unshaded texture onto rendering surface
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
-        SDL_RenderCopy(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect);
+        if (reverseV)
+            SDL_RenderCopyEx(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect, .0f, NULL, SDL_FLIP_VERTICAL);
+        else
+            SDL_RenderCopy(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect);
 
         // Calculate strength of environment color based on depth
         float fogStrength = (FOG_END - wallDepth)/(FOG_END-FOG_START);
