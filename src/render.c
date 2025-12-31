@@ -81,18 +81,20 @@ void TC_RenderFloorCeiling() {
 
         for (int x = 0; x < screenSize.x; x++) {
             Vector2i mapFloorCoord = (Vector2i){.x = (int)worldFloorCoord.x, .y = (int)worldFloorCoord.y};
-            bool paintFloor = TC_IsTilePainted(worldFloorCoord.x, worldFloorCoord.y, TILEPAINT_FULLFLOOR);
+            int tileFloorFlags = TC_GetMapFlags(mapFloorCoord.x, mapFloorCoord.y);
+            bool paintFloor = TC_CHECKIFPAINTFLOOR(tileFloorFlags);
             if (paintFloor)
                 currentFloor = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
             else
                 currentFloor = floorTexture;
 
             Vector2i mapCeilCoord = (Vector2i){.x = (int)worldCeilCoord.x, .y = (int)worldCeilCoord.y};
-            bool paintCeiling = TC_IsTilePainted(worldCeilCoord.x, worldCeilCoord.y, TILEPAINT_FULLCEILING);
+            int tileCeilFlags = TC_GetMapFlags(mapCeilCoord.x, mapCeilCoord.y);
+            bool paintCeiling = TC_CHECKIFPAINTCEILING(tileCeilFlags);
             if (paintCeiling)
-                currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
+                currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapCeilCoord.x, (int)mapCeilCoord.y));
             else
-                currentCeiling = floorTexture;
+                currentCeiling = ceilingTexture;
 
             Vector2i floorUV = (Vector2i){.x = (int)(currentFloor->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (currentFloor->w-1), .y = (int)(currentFloor->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (currentFloor->h-1)};
             Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
@@ -184,11 +186,11 @@ void TC_RenderWalls() {
         int facePlane;
 
         if (showFakeWalls) {
-            // Map tile paint
-            int tilePaint = TILEPAINT_NONE;
+            // Map tile flags
+            int tileFlags = 0;
 
             // Digital Differential Analysis
-            while (tilePaint != TILEPAINT_WALL && totalScans < SCAN_DISTANCE) {
+            while (!TC_CHECKIFPAINTWALL(tileFlags) && totalScans < SCAN_DISTANCE) {
                 totalScans += 1;
                 if (totalDist.x < totalDist.y) {
                     totalDist.x += travelDist.x;
@@ -201,19 +203,19 @@ void TC_RenderWalls() {
                     // East/West Plane
                     facePlane = 1;
                 }
-                tilePaint = TC_GetMapPaint(mapCoord.x, mapCoord.y);
+                tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
             }
 
-            if (tilePaint != TILEPAINT_WALL)
+            if (!TC_CHECKIFPAINTWALL(tileFlags))
                 continue;
         } else {
-            // Map tile paint
-            int tilePaint = TILEPAINT_NONE;
+            // Map tile flags
+            int tileFlags = 0;
             // Map tile collision
             int tileCollide = 0;
 
             // Digital Differential Analysis
-            while ((tilePaint != TILEPAINT_WALL || tileCollide == 0) && totalScans < SCAN_DISTANCE) {
+            while ((TC_CHECKIFPAINTWALL(tileFlags) || tileCollide == 0) && totalScans < SCAN_DISTANCE) {
                 totalScans += 1;
                 if (totalDist.x < totalDist.y) {
                     totalDist.x += travelDist.x;
@@ -226,11 +228,11 @@ void TC_RenderWalls() {
                     // East/West Plane
                     facePlane = 1;
                 }
-                tilePaint = TC_GetMapPaint(mapCoord.x, mapCoord.y);
+                tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
                 tileCollide = TC_GetMapCollision(mapCoord.x, mapCoord.y);
             }
 
-            if (tilePaint != TILEPAINT_WALL || tileCollide == 0)
+            if (TC_CHECKIFPAINTWALL(tileFlags) || tileCollide == 0)
                 continue;
         }
 

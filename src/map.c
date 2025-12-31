@@ -12,7 +12,7 @@ int textureMap[19][19] =
     {0,0,2,2,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0},
     {0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,1,0,0},
     {0,0,1,0,0,0,1,0,0,0,3,0,0,0,2,2,1,0,0},
-    {0,1,1,0,0,0,1,0,0,0,3,4,0,0,0,0,1,0,0},
+    {0,1,1,0,0,0,1,0,0,0,3,3,0,0,0,0,1,0,0},
     {0,0,0,0,0,0,0,0,0,0,3,0,2,1,1,1,1,0,0},
     {0,0,2,0,0,2,2,0,0,0,0,0,2,0,2,0,1,0,0},
     {0,0,2,0,0,0,2,2,2,2,2,2,2,0,2,0,0,0,0},
@@ -47,27 +47,27 @@ int collisionMap[19][19] =
     {1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1}
 };
 
-int paintMap[19][19] =
+int flagMap[19][19] =
 {
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1},
-    {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1},
-    {1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1},
-    {1,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,1},
-    {1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
-    {1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1},
-    {1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1},
-    {1,1,1,0,1,0,1,0,1,0,1,2,1,0,0,0,1,0,1},
-    {1,0,0,0,1,0,0,0,1,0,1,0,1,1,1,1,1,0,1},
-    {1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,1,0,1},
-    {1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
-    {1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
-    {1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1},
-    {1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1},
-    {1,0,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1},
-    {1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1}
+    {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
+    {2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,0,2},
+    {2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2},
+    {2,0,2,0,2,2,0,2,2,2,2,0,2,2,2,0,2,0,2},
+    {2,0,2,0,2,0,0,0,0,0,2,0,0,0,2,0,2,0,2},
+    {2,0,2,2,2,0,2,2,2,2,2,2,2,0,2,0,0,0,2},
+    {2,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,2,0,2},
+    {2,0,2,0,2,0,2,2,2,0,2,0,2,0,2,2,2,0,2},
+    {2,2,2,0,2,0,2,0,2,0,2,1,2,0,0,0,2,0,2},
+    {2,0,0,0,2,0,0,0,2,0,2,0,2,2,2,2,2,0,2},
+    {2,0,2,0,2,2,2,0,0,0,0,0,2,0,2,0,2,0,2},
+    {2,0,2,0,2,0,2,2,2,2,2,2,2,0,2,0,0,0,2},
+    {2,0,2,0,2,0,0,0,0,0,0,0,0,0,2,0,2,0,2},
+    {2,0,2,0,2,2,2,0,2,2,2,0,2,2,2,0,2,0,2},
+    {2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2},
+    {2,0,2,2,2,2,2,2,2,0,2,2,2,0,2,2,2,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,2},
+    {2,2,2,2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2}
 };
 
 float* tileOffset;
@@ -94,9 +94,9 @@ void TC_ReverseMap() {
             collisionMap[x][y] = collisionMap[currentMapSize.x-x-1][y];
             collisionMap[currentMapSize.x-x-1][y] = swapInt;
 
-            swapInt = paintMap[x][y];
-            paintMap[x][y] = paintMap[currentMapSize.x-x-1][y];
-            paintMap[currentMapSize.x-x-1][y] = swapInt;
+            swapInt = flagMap[x][y];
+            flagMap[x][y] = flagMap[currentMapSize.x-x-1][y];
+            flagMap[currentMapSize.x-x-1][y] = swapInt;
         }
     }
 }
@@ -108,20 +108,25 @@ void TC_GenerateAmbient() {
     for (int x = 0; x < currentMapSize.x; x++) {
         for (int y = 0; y < currentMapSize.y; y++) {
             int corners = 0;
-            if (paintMap[x][y] == TILEPAINT_WALL) {
+            int flagMapCurrent = TC_GetMapFlags(x, y);
+            if (TC_CHECKIFPAINTWALL(flagMapCurrent)) {
                 if (x > 0) {
-                    if (y > 0 && paintMap[x-1][y-1] == TILEPAINT_WALL) {
+                    flagMapCurrent = TC_GetMapFlags(x-1, y-1);
+                    if (y > 0 && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
                         corners |= 1;
                     }
-                    if (y < yLimit && paintMap[x-1][y+1] == TILEPAINT_WALL) {
+                    flagMapCurrent = TC_GetMapFlags(x-1, y+1);
+                    if (y < yLimit && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
                         corners |= (1 << 1);
                     }
                 }
                 if (x < xLimit) {
-                    if (y > 0 && paintMap[x+1][y-1] == TILEPAINT_WALL) {
+                    flagMapCurrent = TC_GetMapFlags(x+1, y-1);
+                    if (y > 0 && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
                         corners |= (1 << 3);
                     }
-                    if (y < yLimit && paintMap[x+1][y+1] == TILEPAINT_WALL) {
+                    flagMapCurrent = TC_GetMapFlags(x+1, y+1);
+                    if (y < yLimit && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
                         corners |= (1 << 2);
                     }
                 }
@@ -168,20 +173,11 @@ CFW_Texture* TC_GetCeilingTexture() {
     return ceilingTexture;
 }
 
-bool TC_IsTilePainted(float x, float y, enum TILEPAINT surface) {
-    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y) {
-        enum TILEPAINT checkBehaviour = paintMap[(int)x][(int)y];
-        Vector2 subTile = (Vector2){.x = x-((int)x), .y = y-((int)y)};
-        return checkBehaviour == surface || ((checkBehaviour == (surface + 1)) && subTile.x >= .25f && subTile.x <= .75f && subTile.y >= .25f && subTile.y <= .75f);
-    }
-    return false;
-}
-
-enum TILEPAINT TC_GetMapPaint(int x, int y) {
+int TC_GetMapFlags(int x, int y) {
     if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
-        return paintMap[x][y];
+        return flagMap[x][y];
     else
-        return TILEPAINT_NONE;
+        return 0;
 }
 
 int TC_GetMapAmbient(int x, int y) {

@@ -3,22 +3,28 @@
 
 #include "../CosmaFW/include/cfw.h"
 
-enum TILEPAINT {
-    TILEPAINT_NONE,
-    TILEPAINT_WALL,
-    TILEPAINT_FULLFLOOR,
-    TILEPAINT_HALFFLOOR,
-    TILEPAINT_FULLCEILING,
-    TILEPAINT_HALFCEILING
+enum TILEFLAG {
+    TILEFLAG_PAINTVERTICAL = 1,
+    TILEFLAG_PAINTWALL = 2,
+    TILEFLAG_PAINTCEILING = 2,
+    TILEFLAG_MIRRORU = 4,
+    TILEFLAG_MIRRORV = 8,
+    TILEFLAG_PADXMIN = 16,
+    TILEFLAG_PADXMAX = 32,
+    TILEFLAG_PADYMIN = 64,
+    TILEFLAG_PADYMAX = 128
 };
+
+#define TC_CHECKIFPAINTWALL(tileFlags) ((tileFlags&TILEFLAG_PAINTVERTICAL) == 0 && (tileFlags&TILEFLAG_PAINTWALL) != 0)
+#define TC_CHECKIFPAINTFLOOR(tileFlags) ((tileFlags&TILEFLAG_PAINTVERTICAL) != 0 && (tileFlags&TILEFLAG_PAINTCEILING) == 0)
+#define TC_CHECKIFPAINTCEILING(tileFlags) ((tileFlags&TILEFLAG_PAINTVERTICAL) != 0 && (tileFlags&TILEFLAG_PAINTCEILING) != 0)
 
 void TC_InitializeMap();
 int TC_GetMapTextureID(int x, int y);
 CFW_Texture* TC_GetMapTexture(int id);
 CFW_Texture* TC_GetFloorTexture();
 CFW_Texture* TC_GetCeilingTexture();
-bool TC_IsTilePainted(float x, float y, enum TILEPAINT surface);
-enum TILEPAINT TC_GetMapPaint(int x, int y);
+int TC_GetMapFlags(int x, int y);
 int TC_GetMapAmbient(int x, int y);
 int TC_GetMapCollision(int x, int y);
 Vector2i* TC_GetMapSizePointer();
