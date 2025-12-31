@@ -23,7 +23,7 @@ bool TC_CheckTilesWithinSquare(Vector2 position, float width) {
         if (((int)checkPosition.x) != lastCheckTile.x) {
             while (checkPosition.y <= position.y + halfWidth) {
                 if (((int)checkPosition.y) != lastCheckTile.y) {
-                    if (TC_GetMapTile((int)checkPosition.x, (int)checkPosition.y) != 0)
+                    if (TC_GetMapCollision((int)checkPosition.x, (int)checkPosition.y) != 0)
                         return true;
 
                     lastCheckTile.y = (int)checkPosition.y;
@@ -49,7 +49,7 @@ bool TC_CheckTilesWithinCircle(Vector2 position, float radius) {
             while (checkPosition.y <= position.y + radius) {
                 if (((int)checkPosition.y) != lastCheckTile.y) {
 
-                    if (TC_GetMapTile((int)checkPosition.x, (int)checkPosition.y) != 0 && TC_CheckCollisionCircleSquare(position, radius, checkPosition, 1.f))
+                    if (TC_GetMapCollision((int)checkPosition.x, (int)checkPosition.y) != 0 && TC_CheckCollisionCircleSquare(position, radius, checkPosition, 1.f))
                         return true;
 
                     lastCheckTile.y = (int)checkPosition.y;

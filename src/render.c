@@ -6,8 +6,8 @@
 #include <math.h>
 
 #define FAR_PLANE_DISTANCE 4.75f
-#define FOG_START -1.5f
-#define FOG_END 3.f
+#define FOG_START -2.f
+#define FOG_END 4.f
 #define FOG_COLOR 20, 12, 1
 #define AO_COLOR 30, 45, 0
 /*#define FOG_START 0.f
@@ -22,6 +22,7 @@
 
 Vector2i* renderMapSize;
 SDL_Renderer* mainRenderer;
+int rendererFlags = 0;
 SDL_Texture* mainRenderTexture;
 SDL_Texture* viewRenderTexture;
 Vector2i screenSize = (Vector2i){.x = 244, .y = 160};
@@ -39,7 +40,7 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
     camera = malloc(sizeof(RayCamera));
     camera->cameraPosition = (Vector2){.x = 0.0f, .y = 0.0f};
     camera->cameraDirection = (Vector2){.x = 0.0f, .y = 0.0f};
-    camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.66f};
+    camera->cameraPlane = (Vector2){.x = 0.0f, .y = 0.90f};
     camera->cameraAngle = 0.f;
     camera->horizontalOffset = .2f;
     camera->verticalOffset = 0.f;
@@ -47,14 +48,15 @@ void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Te
 
 void TC_RenderFloorCeiling() {
     SDL_SetRenderTarget(mainRenderer, viewRenderTexture);
-
     float verticalFogOffset = camera->verticalOffset * .5f;
 
     void** writePixels;
     int* writePitch;
 
     CFW_Texture* ceilingTexture = TC_GetCeilingTexture();
+    CFW_Texture* currentCeiling = ceilingTexture;
     CFW_Texture* floorTexture = TC_GetFloorTexture();
+    CFW_Texture* currentFloor = floorTexture;
 
     Vector2 rayDirection0;
     Vector2 rayDirection1;
@@ -79,9 +81,21 @@ void TC_RenderFloorCeiling() {
 
         for (int x = 0; x < screenSize.x; x++) {
             Vector2i mapFloorCoord = (Vector2i){.x = (int)worldFloorCoord.x, .y = (int)worldFloorCoord.y};
+            bool paintFloor = TC_IsTilePainted(worldFloorCoord.x, worldFloorCoord.y, TILEPAINT_FULLFLOOR);
+            if (paintFloor)
+                currentFloor = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
+            else
+                currentFloor = floorTexture;
+
             Vector2i mapCeilCoord = (Vector2i){.x = (int)worldCeilCoord.x, .y = (int)worldCeilCoord.y};
-            Vector2i floorUV = (Vector2i){.x = (int)(floorTexture->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (floorTexture->w-1), .y = (int)(floorTexture->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (floorTexture->h-1)};
-            Vector2i ceilingUV = (Vector2i){.x = (int)(ceilingTexture->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (ceilingTexture->w-1), .y = (int)(ceilingTexture->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (ceilingTexture->h-1)};
+            bool paintCeiling = TC_IsTilePainted(worldCeilCoord.x, worldCeilCoord.y, TILEPAINT_FULLCEILING);
+            if (paintCeiling)
+                currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
+            else
+                currentCeiling = floorTexture;
+
+            Vector2i floorUV = (Vector2i){.x = (int)(currentFloor->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (currentFloor->w-1), .y = (int)(currentFloor->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (currentFloor->h-1)};
+            Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
 
             worldFloorCoord.x += floorDist.x;
             worldFloorCoord.y += floorDist.y;
@@ -96,14 +110,14 @@ void TC_RenderFloorCeiling() {
             Uint8 blueColor;
             Uint8 alphaColor;
 
-            sampleColor = ((Uint32*)floorTexture->surface->pixels)[floorUV.x + floorUV.y*floorTexture->w];
-            SDL_GetRGBA(sampleColor, floorTexture->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
+            sampleColor = ((Uint32*)currentFloor->surface->pixels)[floorUV.x + floorUV.y*currentFloor->w];
+            SDL_GetRGBA(sampleColor, currentFloor->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
 
             SDL_SetRenderDrawColor(mainRenderer, redColor, greenColor, blueColor, alphaColor);
             SDL_RenderDrawPoint(mainRenderer, x, y);
 
-            sampleColor = ((Uint32*)ceilingTexture->surface->pixels)[ceilingUV.x + ceilingUV.y*ceilingTexture->w];
-            SDL_GetRGBA(sampleColor, ceilingTexture->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
+            sampleColor = ((Uint32*)currentCeiling->surface->pixels)[ceilingUV.x + ceilingUV.y*currentCeiling->w];
+            SDL_GetRGBA(sampleColor, currentCeiling->surface->format, &redColor, &greenColor, &blueColor, &alphaColor);
             SDL_SetRenderDrawColor(mainRenderer, redColor, greenColor, blueColor, alphaColor);
             SDL_RenderDrawPoint(mainRenderer, x, screenSize.y-y-1);
         }
@@ -127,6 +141,8 @@ void TC_RenderFloorCeiling() {
 }
 
 void TC_RenderWalls() {
+    SDL_SetRenderTarget(mainRenderer, viewRenderTexture);
+    bool showFakeWalls = (rendererFlags & TC_RENDER_CHECKCOLLISION) == 0;
     // Load up the Camera data we need
     Vector2 horizontalOffset = (Vector2){.x = camera->cameraPlane.x * camera->horizontalOffset, .y =  camera->cameraPlane.y * camera->horizontalOffset};
     Vector2 cameraPos = (Vector2){.x = camera->cameraPosition.x+horizontalOffset.x, .y = camera->cameraPosition.y+horizontalOffset.y};
@@ -164,30 +180,59 @@ void TC_RenderWalls() {
             totalDist.y = (mapCoord.y + 1.0 - cameraPos.y) * travelDist.y;
         }
 
-        // Map tile ID found
-        int tileId = 0;
         // North/South Plane or East/West Plane
         int facePlane;
 
-        // Digital Differential Analysis
-        while (tileId == 0 && totalScans < SCAN_DISTANCE) {
-            totalScans += 1;
-            if (totalDist.x < totalDist.y) {
-                totalDist.x += travelDist.x;
-                mapCoord.x += travelMap.x;
-                // North/South Plane
-                facePlane = 0;
-            } else {
-                totalDist.y += travelDist.y;
-                mapCoord.y += travelMap.y;
-                // East/West Plane
-                facePlane = 1;
-            }
-            tileId = TC_GetMapTile(mapCoord.x, mapCoord.y);
-        }
+        if (showFakeWalls) {
+            // Map tile paint
+            int tilePaint = TILEPAINT_NONE;
 
-        if (tileId == 0)
-            continue;
+            // Digital Differential Analysis
+            while (tilePaint != TILEPAINT_WALL && totalScans < SCAN_DISTANCE) {
+                totalScans += 1;
+                if (totalDist.x < totalDist.y) {
+                    totalDist.x += travelDist.x;
+                    mapCoord.x += travelMap.x;
+                    // North/South Plane
+                    facePlane = 0;
+                } else {
+                    totalDist.y += travelDist.y;
+                    mapCoord.y += travelMap.y;
+                    // East/West Plane
+                    facePlane = 1;
+                }
+                tilePaint = TC_GetMapPaint(mapCoord.x, mapCoord.y);
+            }
+
+            if (tilePaint != TILEPAINT_WALL)
+                continue;
+        } else {
+            // Map tile paint
+            int tilePaint = TILEPAINT_NONE;
+            // Map tile collision
+            int tileCollide = 0;
+
+            // Digital Differential Analysis
+            while ((tilePaint != TILEPAINT_WALL || tileCollide == 0) && totalScans < SCAN_DISTANCE) {
+                totalScans += 1;
+                if (totalDist.x < totalDist.y) {
+                    totalDist.x += travelDist.x;
+                    mapCoord.x += travelMap.x;
+                    // North/South Plane
+                    facePlane = 0;
+                } else {
+                    totalDist.y += travelDist.y;
+                    mapCoord.y += travelMap.y;
+                    // East/West Plane
+                    facePlane = 1;
+                }
+                tilePaint = TC_GetMapPaint(mapCoord.x, mapCoord.y);
+                tileCollide = TC_GetMapCollision(mapCoord.x, mapCoord.y);
+            }
+
+            if (tilePaint != TILEPAINT_WALL || tileCollide == 0)
+                continue;
+        }
 
         // Distance from detected wall to camera
         float wallDepth = (facePlane == 0) ? (totalDist.x - travelDist.x) : (totalDist.y - travelDist.y);
@@ -244,7 +289,7 @@ void TC_RenderWalls() {
         aoStrength = invertFloat(aoStrength);
 
         // Fetch Tile Texture using found Map coords
-        CFW_Texture* targetTexture = TC_GetMapTexture(tileId);
+        CFW_Texture* targetTexture = TC_GetMapTexture(TC_GetMapTextureID(mapCoord.x, mapCoord.y));
         // Calculate Horizontal Texture pixel coord
         int textureX = (int)(wallX * (float)targetTexture->w);
         // Height of tile onscreen

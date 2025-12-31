@@ -1,48 +1,145 @@
 #include "../include/map.h"
 #include <SDL2/SDL_render.h>
 
-// Currently loaded map tiles
-int currentMap[19][19] =
+int textureMap[19][19] =
+{
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0},
+    {0,0,2,2,2,2,2,2,2,2,0,3,3,3,3,3,3,0,0},
+    {0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0},
+    {0,0,2,0,0,0,0,3,3,3,3,0,2,2,2,0,2,0,0},
+    {0,0,2,0,0,0,0,0,0,0,3,0,0,0,2,0,2,0,0},
+    {0,0,2,2,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0},
+    {0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,1,0,0},
+    {0,0,1,0,0,0,1,0,0,0,3,0,0,0,2,2,1,0,0},
+    {0,1,1,0,0,0,1,0,0,0,3,4,0,0,0,0,1,0,0},
+    {0,0,0,0,0,0,0,0,0,0,3,0,2,1,1,1,1,0,0},
+    {0,0,2,0,0,2,2,0,0,0,0,0,2,0,2,0,1,0,0},
+    {0,0,2,0,0,0,2,2,2,2,2,2,2,0,2,0,0,0,0},
+    {0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,1,0,0},
+    {0,0,2,0,0,0,0,0,3,3,3,0,2,2,2,0,1,0,0},
+    {0,0,2,0,0,0,0,0,3,0,3,0,0,0,0,0,1,0,0},
+    {0,0,2,1,1,1,1,1,1,0,3,3,3,0,1,1,1,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,1,0,0},
+    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+};
+
+int collisionMap[19][19] =
 {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,3,3,3,3,3,3,3,3,0,4,4,4,4,4,4,0,1},
-    {1,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,1},
-    {1,0,3,0,1,1,0,4,4,4,4,0,3,3,3,0,3,0,1},
-    {1,0,3,0,1,0,0,0,0,0,4,0,0,0,3,0,3,0,1},
-    {1,0,3,3,1,0,2,1,1,1,1,1,1,0,3,0,0,0,1},
-    {1,0,0,0,1,0,2,0,0,0,0,0,1,0,3,0,2,0,1},
-    {1,0,2,0,1,0,2,1,1,0,4,0,1,0,3,3,2,0,1},
-    {1,2,2,0,1,0,2,0,1,0,4,4,1,0,0,0,2,0,1},
-    {1,0,0,0,1,0,0,0,1,0,4,0,3,2,2,2,2,0,1},
-    {1,0,3,0,1,3,3,0,0,0,0,0,3,0,3,0,2,0,1},
-    {1,0,3,0,1,0,3,3,3,3,3,3,3,0,3,0,0,0,1},
-    {1,0,3,0,1,0,0,0,0,0,0,0,0,0,3,0,2,0,1},
-    {1,0,3,0,1,1,1,0,4,4,4,0,3,3,3,0,2,0,1},
-    {1,0,3,0,0,0,0,0,4,0,4,0,0,0,0,0,2,0,1},
-    {1,0,3,2,2,2,2,2,2,0,4,4,4,0,2,2,2,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,2,0,1},
+    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1},
+    {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1},
+    {1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1},
+    {1,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,1},
+    {1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
+    {1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1},
+    {1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1},
+    {1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,0,1},
+    {1,0,0,0,1,0,0,0,1,0,1,0,1,1,1,1,1,0,1},
+    {1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,1,0,1},
+    {1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
+    {1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
+    {1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1},
+    {1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1},
+    {1,0,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1}
 };
+
+int paintMap[19][19] =
+{
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1},
+    {1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1},
+    {1,0,1,0,1,1,0,1,1,1,1,0,1,1,1,0,1,0,1},
+    {1,0,1,0,1,0,0,0,0,0,1,0,0,0,1,0,1,0,1},
+    {1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
+    {1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1},
+    {1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1},
+    {1,1,1,0,1,0,1,0,1,0,1,2,1,0,0,0,1,0,1},
+    {1,0,0,0,1,0,0,0,1,0,1,0,1,1,1,1,1,0,1},
+    {1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,1,0,1},
+    {1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
+    {1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
+    {1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1},
+    {1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1},
+    {1,0,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1},
+    {1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1}
+};
+
+float* tileOffset;
+
+// Currently loaded map ambient occlusion, generated on map load
+int* ambientMap;
 // Currently loaded map size
 Vector2i currentMapSize = {19, 19};
-// Currently loaded map ambient occlusion, generated on map load
-int mapAmbient[19][19];
 
 // Currently loaded map textures, populated on load
-CFW_Texture* mapTextures[5];
+CFW_Texture** mapTextures;
 
 CFW_Texture* floorTexture;
 CFW_Texture* ceilingTexture;
 
+void TC_ReverseMap() {
+    for (int x = 0; x < currentMapSize.x/2; x++) {
+        for (int y = 0; y < currentMapSize.y; y++) {
+            int swapInt = textureMap[x][y];
+            textureMap[x][y] = textureMap[currentMapSize.x-x-1][y];
+            textureMap[currentMapSize.x-x-1][y] = swapInt;
+
+            swapInt = collisionMap[x][y];
+            collisionMap[x][y] = collisionMap[currentMapSize.x-x-1][y];
+            collisionMap[currentMapSize.x-x-1][y] = swapInt;
+
+            swapInt = paintMap[x][y];
+            paintMap[x][y] = paintMap[currentMapSize.x-x-1][y];
+            paintMap[currentMapSize.x-x-1][y] = swapInt;
+        }
+    }
+}
+
+void TC_GenerateAmbient() {
+    ambientMap = malloc(sizeof(int)*currentMapSize.x*currentMapSize.y);
+    int xLimit = currentMapSize.x-1;
+    int yLimit = currentMapSize.y-1;
+    for (int x = 0; x < currentMapSize.x; x++) {
+        for (int y = 0; y < currentMapSize.y; y++) {
+            int corners = 0;
+            if (paintMap[x][y] == TILEPAINT_WALL) {
+                if (x > 0) {
+                    if (y > 0 && paintMap[x-1][y-1] == TILEPAINT_WALL) {
+                        corners |= 1;
+                    }
+                    if (y < yLimit && paintMap[x-1][y+1] == TILEPAINT_WALL) {
+                        corners |= (1 << 1);
+                    }
+                }
+                if (x < xLimit) {
+                    if (y > 0 && paintMap[x+1][y-1] == TILEPAINT_WALL) {
+                        corners |= (1 << 3);
+                    }
+                    if (y < yLimit && paintMap[x+1][y+1] == TILEPAINT_WALL) {
+                        corners |= (1 << 2);
+                    }
+                }
+                ambientMap[x+y * currentMapSize.x] = corners;
+            }
+        }
+    }
+}
+
 void TC_InitializeMap() {
     TC_ReverseMap();
     TC_GenerateAmbient();
+    mapTextures = malloc(sizeof(void*)*5);
     mapTextures[0] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[1] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[2] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[3] = CFW_CreateTexture("assets/textures/wall1.png");
-    mapTextures[4] = CFW_CreateTexture("assets/textures/5.png");
+    mapTextures[4] = CFW_CreateTexture("assets/textures/water.png");
 
     for (int x = 0; x < 5; x++) {
         CFW_ReqTexture(mapTextures[x]);
@@ -55,53 +152,14 @@ void TC_InitializeMap() {
     CFW_ReqTexture(ceilingTexture);
 }
 
-void TC_ReverseMap() {
-    for (int x = 0; x < currentMapSize.x/2; x++) {
-        for (int y = 0; y < currentMapSize.y; y++) {
-            int swapInt = currentMap[x][y];
-            currentMap[x][y] = currentMap[currentMapSize.x-x-1][y];
-            currentMap[currentMapSize.x-x-1][y] = swapInt;
-        }
-    }
-}
-
-void TC_GenerateAmbient() {
-    int xLimit = currentMapSize.x-1;
-    int yLimit = currentMapSize.y-1;
-    for (int x = 0; x < currentMapSize.x; x++) {
-        for (int y = 0; y < currentMapSize.y; y++) {
-            int corners = 0;
-            if (currentMap[x][y] != 0) {
-                if (x > 0) {
-                    if (y > 0 && currentMap[x-1][y-1] != 0) {
-                        corners |= 1;
-                    }
-                    if (y < yLimit && currentMap[x-1][y+1] != 0) {
-                        corners |= (1 << 1);
-                    }
-                }
-                if (x < xLimit) {
-                    if (y > 0 && currentMap[x+1][y-1] != 0) {
-                        corners |= (1 << 3);
-                    }
-                    if (y < yLimit && currentMap[x+1][y+1] != 0) {
-                        corners |= (1 << 2);
-                    }
-                }
-                mapAmbient[x][y] = corners;
-            }
-        }
-    }
-}
-
-int TC_GetMapTile(int x, int y) {
+int TC_GetMapTextureID(int x, int y) {
     if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
-        return currentMap[x][y];
+        return textureMap[x][y];
     else
         return 0;
 }
 CFW_Texture* TC_GetMapTexture(int id) {
-    return mapTextures[id-1];
+    return mapTextures[id];
 }
 CFW_Texture* TC_GetFloorTexture() {
     return floorTexture;
@@ -110,8 +168,30 @@ CFW_Texture* TC_GetCeilingTexture() {
     return ceilingTexture;
 }
 
+bool TC_IsTilePainted(float x, float y, enum TILEPAINT surface) {
+    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y) {
+        enum TILEPAINT checkBehaviour = paintMap[(int)x][(int)y];
+        Vector2 subTile = (Vector2){.x = x-((int)x), .y = y-((int)y)};
+        return checkBehaviour == surface || ((checkBehaviour == (surface + 1)) && subTile.x >= .25f && subTile.x <= .75f && subTile.y >= .25f && subTile.y <= .75f);
+    }
+    return false;
+}
+
+enum TILEPAINT TC_GetMapPaint(int x, int y) {
+    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
+        return paintMap[x][y];
+    else
+        return TILEPAINT_NONE;
+}
+
 int TC_GetMapAmbient(int x, int y) {
-    return mapAmbient[x][y];
+    return ambientMap[x+y * currentMapSize.x];
+}
+int TC_GetMapCollision(int x, int y) {
+    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
+        return collisionMap[x][y];
+    else
+        return 0;
 }
 Vector2i* TC_GetMapSizePointer() {
     return &currentMapSize;
@@ -123,4 +203,6 @@ void TC_FreeMap() {
     }
     CFW_DestroyTexture(floorTexture, true);
     CFW_DestroyTexture(ceilingTexture, true);
+    free(ambientMap);
+    free(mapTextures);
 }

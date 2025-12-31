@@ -29,6 +29,10 @@ struct RayCamera {
     float verticalOffset;
 };
 
+enum TC_RENDERFLAGS {
+    TC_RENDER_CHECKCOLLISION = 1
+};
+
 void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Texture* renderTexture);
 void TC_RenderFloorCeiling();
 void TC_RenderWalls();
