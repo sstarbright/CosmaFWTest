@@ -6,19 +6,7 @@
 #include <math.h>
 
 #define FAR_PLANE_DISTANCE 4.75f
-#define FOG_START -2.f
-#define FOG_END 4.f
-#define FOG_COLOR 20, 12, 1
-#define AO_COLOR 20, 35, 0
-/*#define FOG_START 0.f
-#define FOG_END 5.f
-#define FOG_COLOR 30, 10, 1
-#define AO_COLOR 30, 30, 30*/
-
-#define AO_SHARPNESS 2.f
-#define AO_BRIGHTNESS .1f
 #define SCAN_DISTANCE 50
-#define FLOOR_TILE_COUNT 6
 
 Vector2i* renderMapSize;
 SDL_Renderer* mainRenderer;
@@ -29,6 +17,16 @@ Vector2i screenSize = (Vector2i){.x = 244, .y = 160};
 SDL_Rect viewportRect;
 
 RayCamera* camera;
+
+// Fog Rendering Data
+float fog_start = -2.f;
+float fog_end = 4.f;
+CFW_Color fog_color = (CFW_Color){.r = 20, .g = 12, .b = 1};
+
+// AO Rendering Data
+float ao_sharpness = 2.f;
+float ao_transparency = .1f;
+CFW_Color ao_color = (CFW_Color){.r = 20, .g = 35, .b = 0};
 
 void TC_SetupRenderer(Vector2i* mapSizePointer, CFW_Window* targetWindow, SDL_Texture* renderTexture) {
     renderMapSize = mapSizePointer;
@@ -138,7 +136,7 @@ void TC_RenderFloorCeiling() {
 
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
         float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
-        float fogStrength = (FOG_END - floorDistance)/(FOG_END-FOG_START);
+        float fogStrength = (fog_end - floorDistance)/(fog_end-fog_start);
 
         float floorFogStrength = fogStrength - verticalFogOffset;
         floorFogStrength = clampFloat(floorFogStrength, 0.f, 1.f);
@@ -147,9 +145,9 @@ void TC_RenderFloorCeiling() {
         ceilFogStrength = clampFloat(ceilFogStrength, 0.f, 1.f);
         ceilFogStrength = invertFloat(ceilFogStrength);
 
-        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(floorFogStrength*255));
+        SDL_SetRenderDrawColor(mainRenderer, fog_color.r, fog_color.g, fog_color.b, (int)(floorFogStrength*255));
         SDL_RenderDrawLine(mainRenderer, 0, y, screenSize.x-1, y);
-        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(ceilFogStrength*255));
+        SDL_SetRenderDrawColor(mainRenderer, fog_color.r, fog_color.g, fog_color.b, (int)(ceilFogStrength*255));
         SDL_RenderDrawLine(mainRenderer, 0, screenSize.y-y-1, screenSize.x-1, screenSize.y-y-1);
     }
 }
@@ -168,6 +166,14 @@ void TC_RenderWalls() {
         float screenX = 2 * x / ((float)screenSize.x) - 1;
         // Direction of Ray
         Vector2 rayDir = (Vector2){.x = camera->cameraDirection.x + camera->cameraPlane.x * screenX, .y = camera->cameraDirection.y + camera->cameraPlane.y * screenX};
+
+        float rayLength = sqrtf(rayDir.x*rayDir.x+rayDir.y*rayDir.y);
+        Vector2 rayNorm = (Vector2){.x = rayDir.x/rayLength, .y = rayDir.y/rayLength};
+
+        Line2 rayLine = (Line2){.start = (Vector2){.x = cameraPos.x, .y = cameraPos.y}, .end = (Vector2){.x = cameraPos.x+rayDir.x*SCAN_DISTANCE, .y = cameraPos.y+rayDir.y*SCAN_DISTANCE}};
+
+        Line2 wallLine = (Line2){.start = (Vector2){.x = 0.f, .y = 0.f}, .end = (Vector2){.x = 0.f, .y = 0.f}};
+
         // Distance to travel for every scan
         Vector2 travelDist = (Vector2){.x = rayDir.x == 0.0f ? 1e30 : fabs(1.0f / rayDir.x), .y = rayDir.y == 0.0f ? 1e30 : fabs(1.0f / rayDir.y)};
         // Map distance to travel for every scan
@@ -198,52 +204,93 @@ void TC_RenderWalls() {
         int facePlane;
         // Map tile flags
         int tileFlags = 0;
+        bool wallFound = false;
+        float travelAmount = 0.f;
+
+        float northWallOffset = .5f;
+        float southWallOffset = -.5f;
+        float westWallOffset = .5f;
+        float eastWallOffset = -.5f;
 
         if (showFakeWalls) {
-
             // Digital Differential Analysis
-            while (!TC_CHECKIFPAINTWALL(tileFlags) && totalScans < SCAN_DISTANCE) {
+            while (!wallFound && totalScans < SCAN_DISTANCE) {
                 totalScans += 1;
                 if (totalDist.x < totalDist.y) {
-                    totalDist.x += travelDist.x;
                     mapCoord.x += travelMap.x;
-                    // North/South Plane
-                    facePlane = 0;
+                    totalDist.x += travelDist.x;
+
+                    tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
+                    SETUP_PADDING()
+
+                    if (TC_CHECKIFPAINTWALL(tileFlags)) {
+                        SETUP_X_WALL();
+
+                        float wallPosition = (cameraPos.y + (totalDist.x - travelDist.x) * rayDir.y);
+                        Vector2 hitPosition = (Vector2){.x = mapCoord.x+(rayDir.x > 0 ? -.5f : .5f), .y = wallPosition-.5f};
+                        SETUP_RAY_LINE();
+
+                        if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                            wallFound = true;
+
+                            // Check if Wall Position is past the offset points for this side. If so, set face plane to North/South and adjust totalDist for that
+                            totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
+
+                            // North/South Plane
+                            facePlane = 0;
+                        } else {
+                            SETUP_Y_WALL();
+
+                            if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                                wallFound = true;
+
+                                totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
+
+                                facePlane = 1;
+                            }
+                        }
+                    }
                 } else {
-                    totalDist.y += travelDist.y;
                     mapCoord.y += travelMap.y;
-                    // East/West Plane
-                    facePlane = 1;
+                    totalDist.y += travelDist.y;
+
+                    tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
+                    SETUP_PADDING()
+
+                    if (TC_CHECKIFPAINTWALL(tileFlags)) {
+                        SETUP_Y_WALL();
+
+                        float wallPosition = (cameraPos.x + (totalDist.y - travelDist.y) * rayDir.x);
+                        Vector2 hitPosition = (Vector2){.x = wallPosition-.5f, .y = mapCoord.y+(rayDir.y > 0 ? -.5f : .5f)};
+                        SETUP_RAY_LINE();
+
+                        if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                            wallFound = true;
+
+                            totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
+
+                            // East/West Plane
+                            facePlane = 1;
+                        } else {
+                            SETUP_X_WALL();
+
+                            if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                                wallFound = true;
+
+                                totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
+
+                                facePlane = 0;
+                            }
+                        }
+                    }
                 }
-                tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
             }
 
-            if (!TC_CHECKIFPAINTWALL(tileFlags))
+            if (!wallFound)
                 continue;
         } else {
             // Map tile collision
             int tileCollide = 0;
-
-            // Digital Differential Analysis
-            while ((TC_CHECKIFPAINTWALL(tileFlags) || tileCollide == 0) && totalScans < SCAN_DISTANCE) {
-                totalScans += 1;
-                if (totalDist.x < totalDist.y) {
-                    totalDist.x += travelDist.x;
-                    mapCoord.x += travelMap.x;
-                    // North/South Plane
-                    facePlane = 0;
-                } else {
-                    totalDist.y += travelDist.y;
-                    mapCoord.y += travelMap.y;
-                    // East/West Plane
-                    facePlane = 1;
-                }
-                tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
-                tileCollide = TC_GetMapCollision(mapCoord.x, mapCoord.y);
-            }
-
-            if (TC_CHECKIFPAINTWALL(tileFlags) || tileCollide == 0)
-                continue;
         }
 
         bool reverseU = (tileFlags & TILEFLAG_MIRRORU) > 0;
@@ -263,17 +310,12 @@ void TC_RenderWalls() {
         // Cardinal direction of face
         int visibleFace = 0;
 
-        float aoStrength = 1.0;
-        int ambientData = TC_GetMapAmbient(mapCoord.x, mapCoord.y);
         float wallClamp;
         // Modify Texture coord and setup face based on side and Ray Direction
         if(facePlane == 0) {
             if (rayDir.x > 0) {
                 // North Face
                 visibleFace = 0;
-                // Check for Ambient Occlusion data, calculate and apply it if present
-                // North face uses corners in slots 0 and 1
-                applyAmbient(2, 1)
                 if (!reverseU) {
                     // Reverse texture coord
                     wallX = invertFloat(wallX);
@@ -281,9 +323,6 @@ void TC_RenderWalls() {
             } else {
                 // South
                 visibleFace = 2;
-                // Check for Ambient Occlusion data, calculate and apply it if present
-                // South face uses corners in slots 2 and 3
-                applyAmbient(4, 8)
                 if (reverseU) {
                     // Reverse texture coord
                     wallX = invertFloat(wallX);
@@ -294,9 +333,6 @@ void TC_RenderWalls() {
             if (rayDir.y < 0) {
                 // East
                 visibleFace = 1;
-                // Check for Ambient Occlusion data, calculate and apply it if present
-                // East face uses corners in slots 1 and 2
-                applyAmbient(4, 2)
                 if (!reverseU) {
                     // Reverse texture coord
                     wallX = invertFloat(wallX);
@@ -304,16 +340,12 @@ void TC_RenderWalls() {
             } else {
                 // West
                 visibleFace = 3;
-                // Check for Ambient Occlusion data, calculate and apply it if present
-                // East face uses corners in slots 0 and 3
-                applyAmbient(8, 1)
                 if (reverseU) {
                     // Reverse texture coord
                     wallX = invertFloat(wallX);
                 }
             }
         }
-        aoStrength = invertFloat(aoStrength);
 
         // Fetch Tile Texture using found Map coords
         CFW_Texture* targetTexture = TC_GetMapTexture(TC_GetMapTextureID(mapCoord.x, mapCoord.y));
@@ -339,15 +371,13 @@ void TC_RenderWalls() {
             SDL_RenderCopy(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect);
 
         // Calculate strength of environment color based on depth
-        float fogStrength = (FOG_END - wallDepth)/(FOG_END-FOG_START);
+        float fogStrength = (fog_end - wallDepth)/(fog_end-fog_start);
         fogStrength = invertFloat(fogStrength);
         fogStrength = clampFloat(fogStrength, 0.f, 1.f);
 
-        // Draw FOG and AO
+        // Draw FOG
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(mainRenderer, AO_COLOR, (int)(aoStrength*255));
-        SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);
-        SDL_SetRenderDrawColor(mainRenderer, FOG_COLOR, (int)(fogStrength*255));
+        SDL_SetRenderDrawColor(mainRenderer, fog_color.r, fog_color.g, fog_color.b, (int)(fogStrength*255));
         SDL_RenderDrawLine(mainRenderer, x, drawStart, x, drawEnd-1);
     }
 }

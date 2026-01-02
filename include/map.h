@@ -9,10 +9,10 @@ enum TILEFLAG {
     TILEFLAG_PAINTCEILING = 2,
     TILEFLAG_MIRRORU = 4,
     TILEFLAG_MIRRORV = 8,
-    TILEFLAG_PADXMIN = 16,
-    TILEFLAG_PADXMAX = 32,
-    TILEFLAG_PADYMIN = 64,
-    TILEFLAG_PADYMAX = 128
+    TILEFLAG_PADNORTH = 16,
+    TILEFLAG_PADSOUTH = 32,
+    TILEFLAG_PADEAST = 64,
+    TILEFLAG_PADWEST = 128
 };
 
 #define TC_CHECKIFPAINTWALL(tileFlags) ((tileFlags&TILEFLAG_PAINTVERTICAL) == 0 && (tileFlags&TILEFLAG_PAINTWALL) != 0)
@@ -25,7 +25,6 @@ CFW_Texture* TC_GetMapTexture(int id);
 CFW_Texture* TC_GetFloorTexture();
 CFW_Texture* TC_GetCeilingTexture();
 int TC_GetMapFlags(int x, int y);
-int TC_GetMapAmbient(int x, int y);
 int TC_GetMapCollision(int x, int y);
 Vector2i* TC_GetMapSizePointer();
 void TC_FreeMap();

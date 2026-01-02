@@ -66,3 +66,11 @@ bool TC_CheckTilesWithinCircle(Vector2 position, float radius) {
     }
     return false;
 }
+
+bool TC_CheckLineIntersect(Line2 lineA, Line2 lineB) {
+    float intersectionA = ((lineB.end.x-lineB.start.x)*(lineA.start.y-lineB.start.y) - (lineB.end.y-lineB.start.y)*(lineA.start.x-lineB.start.x))
+                        / ((lineB.end.y-lineB.start.y)*(lineA.end.x-lineA.start.x) - (lineB.end.x-lineB.start.x)*(lineA.end.y-lineA.start.y));
+    float intersectionB = ((lineA.end.x-lineA.start.x)*(lineA.start.y-lineB.start.y) - (lineA.end.y-lineA.start.y)*(lineA.start.x-lineB.start.x))
+                        / ((lineB.end.y-lineB.start.y)*(lineA.end.x-lineA.start.x) - (lineB.end.x-lineB.start.x)*(lineA.end.y-lineA.start.y));
+    return intersectionA >= 0.f && intersectionA <= 1.f && intersectionB >= 0.f && intersectionB <= 1.f;
+}

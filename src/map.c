@@ -35,10 +35,10 @@ int collisionMap[19][19] =
     {1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
     {1,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,1},
     {1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1},
-    {1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,0,1,0,1},
-    {1,0,0,0,1,0,0,0,1,0,1,0,1,1,1,1,1,0,1},
-    {1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,1,0,1},
-    {1,0,1,0,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1},
+    {1,1,1,0,1,0,1,0,0,0,0,1,1,0,0,0,1,0,1},
+    {1,0,0,0,1,0,0,0,0,1,0,0,1,1,1,1,1,0,1},
+    {1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1},
+    {1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,0,0,0,1},
     {1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
     {1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1},
     {1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1},
@@ -58,10 +58,10 @@ int flagMap[19][19] =
     {2,0,2,2,2,0,2,2,2,2,2,2,2,0,2,0,0,0,2},
     {2,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,2,0,2},
     {2,0,2,0,2,0,2,2,2,0,2,0,2,0,2,2,2,0,2},
-    {2,2,2,0,2,0,2,0,2,0,2,14,2,0,0,0,2,0,2},
-    {2,0,0,0,2,0,0,0,2,0,2,0,2,2,2,2,2,0,2},
-    {2,0,2,0,2,2,2,0,0,0,0,0,2,0,2,0,2,0,2},
-    {2,0,2,0,2,0,2,2,2,2,2,2,2,0,2,0,0,0,2},
+    {2,2,2,0,2,0,2,0,0,0,0,2,2,0,0,0,2,0,2},
+    {2,0,0,0,2,0,0,0,0,194,0,0,2,2,2,2,2,0,2},
+    {2,0,2,0,2,2,2,0,50,2,50,0,2,0,2,0,2,0,2},
+    {2,0,2,0,2,0,2,0,0,194,0,0,2,0,2,0,0,0,2},
     {2,0,2,0,2,0,0,0,0,0,0,0,0,0,2,0,2,0,2},
     {2,0,2,0,2,2,2,0,2,2,2,0,2,2,2,0,2,0,2},
     {2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2},
@@ -72,8 +72,6 @@ int flagMap[19][19] =
 
 float* tileOffset;
 
-// Currently loaded map ambient occlusion, generated on map load
-int* ambientMap;
 // Currently loaded map size
 Vector2i currentMapSize = {19, 19};
 
@@ -101,44 +99,8 @@ void TC_ReverseMap() {
     }
 }
 
-void TC_GenerateAmbient() {
-    ambientMap = malloc(sizeof(int)*currentMapSize.x*currentMapSize.y);
-    int xLimit = currentMapSize.x-1;
-    int yLimit = currentMapSize.y-1;
-    for (int x = 0; x < currentMapSize.x; x++) {
-        for (int y = 0; y < currentMapSize.y; y++) {
-            int corners = 0;
-            int flagMapCurrent = TC_GetMapFlags(x, y);
-            if (TC_CHECKIFPAINTWALL(flagMapCurrent)) {
-                if (x > 0) {
-                    flagMapCurrent = TC_GetMapFlags(x-1, y-1);
-                    if (y > 0 && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
-                        corners |= 1;
-                    }
-                    flagMapCurrent = TC_GetMapFlags(x-1, y+1);
-                    if (y < yLimit && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
-                        corners |= (1 << 1);
-                    }
-                }
-                if (x < xLimit) {
-                    flagMapCurrent = TC_GetMapFlags(x+1, y-1);
-                    if (y > 0 && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
-                        corners |= (1 << 3);
-                    }
-                    flagMapCurrent = TC_GetMapFlags(x+1, y+1);
-                    if (y < yLimit && TC_CHECKIFPAINTWALL(flagMapCurrent)) {
-                        corners |= (1 << 2);
-                    }
-                }
-                ambientMap[x+y * currentMapSize.x] = corners;
-            }
-        }
-    }
-}
-
 void TC_InitializeMap() {
     TC_ReverseMap();
-    TC_GenerateAmbient();
     mapTextures = malloc(sizeof(void*)*5);
     mapTextures[0] = CFW_CreateTexture("assets/textures/wall1.png");
     mapTextures[1] = CFW_CreateTexture("assets/textures/wall1.png");
@@ -180,9 +142,6 @@ int TC_GetMapFlags(int x, int y) {
         return 0;
 }
 
-int TC_GetMapAmbient(int x, int y) {
-    return ambientMap[x+y * currentMapSize.x];
-}
 int TC_GetMapCollision(int x, int y) {
     if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
         return collisionMap[x][y];
@@ -199,6 +158,5 @@ void TC_FreeMap() {
     }
     CFW_DestroyTexture(floorTexture, true);
     CFW_DestroyTexture(ceilingTexture, true);
-    free(ambientMap);
     free(mapTextures);
 }

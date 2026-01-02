@@ -9,5 +9,6 @@ bool TC_CheckCollisionCircleCircle(Vector2 circleAPosition, float circleARadius,
 
 bool TC_CheckTilesWithinSquare(Vector2 position, float width);
 bool TC_CheckTilesWithinCircle(Vector2 position, float radius);
+bool TC_CheckLineIntersect(Line2 lineA, Line2 lineB);
 
 #endif

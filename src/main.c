@@ -66,6 +66,13 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
         return false;
     }
 
+    Line2 testLine = (Line2){.start = (Vector2){.x = 0.f, .y = 0.f}, .end = (Vector2){.x = 0.49f, .y = 1.f}};
+    Line2 testLine2 = (Line2){.start = (Vector2){.x = 1.f, .y = 0.f}, .end = (Vector2){.x = 0.51f, .y = 1.f}};
+
+    if (TC_CheckLineIntersect(testLine, testLine2)) {
+        printf("THESE LINES INTERSECT!\n");
+    }
+
     TC_InitializeMap();
     TC_SetupRenderer(TC_GetMapSizePointer(), viewWindow, gameTexture);
     gameCamera = TC_GetCamera();

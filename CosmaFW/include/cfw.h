@@ -27,6 +27,7 @@ typedef struct CFW_AnimAngleTexture CFW_AnimAngleTexture;
 typedef struct CFW_Color CFW_Color;
 typedef struct Vector2 Vector2;
 typedef struct Vector2i Vector2i;
+typedef struct Line2 Line2;
 
 struct CFW_Color {
     uint8_t r;
@@ -41,6 +42,11 @@ struct Vector2 {
 struct Vector2i {
     int x;
     int y;
+};
+
+struct Line2 {
+    Vector2 start;
+    Vector2 end;
 };
 
 struct CFW_Window {
