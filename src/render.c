@@ -83,6 +83,7 @@ void TC_RenderFloorCeiling() {
             bool drawDecal = TC_CHECKIFPAINTFLOOR(tileFlags);
             bool reverseFloorU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
             bool reverseFloorV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
+            bool swapFloorUV = (tileFlags & TILEFLAG_SWAPUV) > 0 && drawDecal;
             if (drawDecal)
                 currentFloor = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
             else
@@ -93,6 +94,7 @@ void TC_RenderFloorCeiling() {
             drawDecal = TC_CHECKIFPAINTCEILING(tileFlags);
             bool reverseCeilingU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
             bool reverseCeilingV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
+            bool swapCeilingUV = (tileFlags & TILEFLAG_SWAPUV) > 0 && drawDecal;
             if (drawDecal)
                 currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapCeilCoord.x, (int)mapCeilCoord.y));
             else
@@ -103,11 +105,21 @@ void TC_RenderFloorCeiling() {
                 floorUV.x = currentFloor->w-1-floorUV.x;
             if (reverseFloorV)
                 floorUV.y = currentFloor->h-1-floorUV.y;
+            if (swapFloorUV) {
+                float oldValue = floorUV.x;
+                floorUV.x = floorUV.y;
+                floorUV.y = oldValue;
+            }
             Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
             if (reverseCeilingU)
                 ceilingUV.x = currentCeiling->w-1-ceilingUV.x;
             if (reverseCeilingV)
                 ceilingUV.y = currentCeiling->h-1-ceilingUV.y;
+            if (swapCeilingUV) {
+                float oldValue = ceilingUV.x;
+                ceilingUV.x = ceilingUV.y;
+                ceilingUV.y = oldValue;
+            }
 
             worldFloorCoord.x += floorDist.x;
             worldFloorCoord.y += floorDist.y;
@@ -304,6 +316,7 @@ void TC_RenderWalls() {
 
         bool reverseU = (tileFlags & TILEFLAG_MIRRORU) > 0;
         bool reverseV = (tileFlags & TILEFLAG_MIRRORV) > 0;
+        bool swapUV = (tileFlags & TILEFLAG_SWAPUV) > 0;
 
         // Distance from detected wall to camera
         float wallDepth = (facePlane == 0) ? (totalDist.x - travelDist.x) : (totalDist.y - travelDist.y);
@@ -371,13 +384,30 @@ void TC_RenderWalls() {
         int drawEnd = (int)(lineHeight/2+screenSize.y/2)+(camera->verticalOffset*lineHeight*.5f);
 
         // Setup screen drawing rect
+        SDL_Rect sourceRect = (SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h};
         SDL_Rect targetRect = (SDL_Rect){.x = x, .y = drawStart, .w = 1, .h = drawEnd-drawStart};
+        int mirrorFlag = reverseV ? SDL_FLIP_VERTICAL : 0;
+        float rotationAngle = .0f;
+        if (swapUV) {
+            int swapBuffer = sourceRect.x;
+            sourceRect.x = sourceRect.y;
+            sourceRect.y = swapBuffer;
+            swapBuffer = sourceRect.w;
+            sourceRect.w = sourceRect.h;
+            sourceRect.h = swapBuffer;
+
+            targetRect.x += 1;
+            swapBuffer = targetRect.w;
+            targetRect.w = targetRect.h;
+            targetRect.h = swapBuffer;
+            rotationAngle = 90.f;
+        }
         // Blit unshaded texture onto rendering surface
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_NONE);
-        if (reverseV)
-            SDL_RenderCopyEx(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect, .0f, NULL, SDL_FLIP_VERTICAL);
+        if (reverseV || swapUV)
+            SDL_RenderCopyEx(mainRenderer, targetTexture->texture, &sourceRect, &targetRect, rotationAngle, &(SDL_Point){.x = 0, .y = 0}, mirrorFlag);
         else
-            SDL_RenderCopy(mainRenderer, targetTexture->texture, &(SDL_Rect){.x = textureX, .y = 0, .w = 1, .h = targetTexture->h}, &targetRect);
+            SDL_RenderCopy(mainRenderer, targetTexture->texture, &sourceRect, &targetRect);
 
         // Calculate strength of environment color based on depth
         float fogStrength = (fog_end - wallDepth)/(fog_end-fog_start);
