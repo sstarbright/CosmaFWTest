@@ -4,6 +4,7 @@
 #include "../include/player.h"
 #include "../include/joy.h"
 #include "../include/collide.h"
+#include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
@@ -26,6 +27,9 @@ SDL_PixelFormat* pixelFormat;
 
 RayCamera* gameCamera = NULL;
 PlayerData gamePlayer;
+float mouseSensitivity = .25f;
+bool trackMouse = true;
+
 float bobTime = 0.f;
 float sideTime = 0.f;
 float baseBobTime = 0.f;
@@ -51,6 +55,7 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
     pixelFormat = SDL_AllocFormat(GAME_PIXEL_FORMAT);
     gameSurface = SDL_CreateRGBSurface(0, gameResolution.x, gameResolution.y, pixelFormat->BitsPerPixel, pixelFormat->Rmask, pixelFormat->Gmask, pixelFormat->Bmask, pixelFormat->Amask);
 
+    SDL_SetRelativeMouseMode(SDL_TRUE);
     SDL_RaiseWindow(gameWindow->window);
     if (!viewWindow->renderer) {
         printf("NO RENDERER FOUND!!!\n");
@@ -88,6 +93,15 @@ bool CFW_OnStart(int argumentCount, char* arguments[]) {
 }
 
 void TC_UpdateJoy(float deltaTime) {
+    if (TC_MouseLeft() && !trackMouse) {
+        trackMouse = true;
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+        TC_QueryMouseMotion();
+    }
+    if (TC_KeyEsc()) {
+        trackMouse = false;
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    }
     float playerX = gamePlayer.position.x;
     float playerY = gamePlayer.position.y;
     float turnX = gamePlayer.direction.x;
@@ -98,27 +112,21 @@ void TC_UpdateJoy(float deltaTime) {
 
     moveSpeed = TC_KeyShift() ? 3.75f : 2.5f;
     float moveDelta = deltaTime * moveSpeed;
-    float rotSpeed = deltaTime * 3.0;
 
-    if (TC_KeyRight())
-    {
-        float oldDirX = turnX;
-        lookAngle -= rotSpeed;
-        turnX = turnX * cos(-rotSpeed) - turnY * sin(-rotSpeed);
-        turnY = oldDirX * sin(-rotSpeed) + turnY * cos(-rotSpeed);
-        float oldPlaneX = planeX;
-        planeX = planeX * cos(-rotSpeed) - planeY * sin(-rotSpeed);
-        planeY = oldPlaneX * sin(-rotSpeed) + planeY * cos(-rotSpeed);
-    }
-    if (TC_KeyLeft())
-    {
-        float oldDirX = turnX;
-        lookAngle += rotSpeed;
-        turnX = turnX * cos(rotSpeed) - turnY * sin(rotSpeed);
-        turnY = oldDirX * sin(rotSpeed) + turnY * cos(rotSpeed);
-        float oldPlaneX = planeX;
-        planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
-        planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
+    if (trackMouse) {
+        Sint32 mouseMotion = -TC_QueryMouseMotion();
+        float rotSpeed = deltaTime * mouseSensitivity * mouseMotion;
+
+        if (fabs(rotSpeed) > 0)
+        {
+            float oldDirX = turnX;
+            lookAngle += rotSpeed;
+            turnX = turnX * cos(rotSpeed) - turnY * sin(rotSpeed);
+            turnY = oldDirX * sin(rotSpeed) + turnY * cos(rotSpeed);
+            float oldPlaneX = planeX;
+            planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
+            planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
+        }
     }
 
     Vector2 targetPosition = (Vector2){.x = playerX, .y = playerY};
@@ -132,6 +140,18 @@ void TC_UpdateJoy(float deltaTime) {
     {
         targetPosition.x -= turnX * moveDelta;
         targetPosition.y -= turnY * moveDelta;
+        movedThisFrame = true;
+    }
+
+    if(TC_KeyLeft()) {
+        targetPosition.x -= planeX * moveDelta;
+        targetPosition.y -= planeY * moveDelta;
+        movedThisFrame = true;
+    }
+    if (TC_KeyRight())
+    {
+        targetPosition.x += planeX * moveDelta;
+        targetPosition.y += planeY * moveDelta;
         movedThisFrame = true;
     }
 
@@ -194,6 +214,17 @@ void CFW_OnUpdate(float deltaTime) {
     SDL_RenderPresent(viewWindow->renderer);
     SDL_BlitScaled(gameSurface, NULL, gameWindow->surface, NULL);
     SDL_UpdateWindowSurface(gameWindow->window);
+}
+
+void CFW_WindowEvent(SDL_Event* event, float deltaTime) {
+    switch (((SDL_WindowEvent*)&event)->event) {
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            printf("FOCUS GAINED\n");
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            printf("FOCUS LOST\n");
+            break;
+    }
 }
 
 void CFW_OnEnd(int exitCode) {

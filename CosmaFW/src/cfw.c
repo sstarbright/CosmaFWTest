@@ -62,6 +62,11 @@ int CFW_End(int exitCode) {
     }
     return exitCode;
 }
+
+void CFW_SetQuit() {
+    isQuit = true;
+}
+
 void CFW_WindowResize() {
     CFW_Window* currentWindow = firstWindow;
     CFW_Window* nextWindow;

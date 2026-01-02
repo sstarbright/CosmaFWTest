@@ -112,6 +112,8 @@ void CFW_OnUpdate(float deltaTime);
 // Must be defined by user
 void CFW_OnEnd(int exitCode);
 
+void CFW_SetQuit();
+
 
 // Creates an SDL Window and adds it to a linked list
 // Prints a message box on Window failure
