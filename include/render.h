@@ -36,7 +36,8 @@ if (tileFlags & TILEFLAG_PADWEST) {\
         westWallOffset = .5f;\
         eastWallOffset = -.5f;\
     }\
-}
+}\
+isFullWall = (tileFlags & TILEFLAG_PADNORTH) == 0 && (tileFlags & TILEFLAG_PADSOUTH) == 0 && (tileFlags & TILEFLAG_PADEAST) == 0 && (tileFlags & TILEFLAG_PADWEST) == 0
 
 #define SETUP_X_WALL() wallLine.start.y = mapCoord.y + westWallOffset;\
 wallLine.end.y = mapCoord.y + eastWallOffset;\

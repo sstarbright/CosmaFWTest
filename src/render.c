@@ -205,6 +205,7 @@ void TC_RenderWalls() {
         // Map tile flags
         int tileFlags = 0;
         bool wallFound = false;
+        bool isFullWall = false;
         float travelAmount = 0.f;
 
         float northWallOffset = .5f;
@@ -221,33 +222,37 @@ void TC_RenderWalls() {
                     totalDist.x += travelDist.x;
 
                     tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
-                    SETUP_PADDING()
-
                     if (TC_CHECKIFPAINTWALL(tileFlags)) {
-                        SETUP_X_WALL();
+                        SETUP_PADDING();
+                        if (!isFullWall) {
+                            SETUP_X_WALL();
 
-                        float wallPosition = (cameraPos.y + (totalDist.x - travelDist.x) * rayDir.y);
-                        Vector2 hitPosition = (Vector2){.x = mapCoord.x+(rayDir.x > 0 ? -.5f : .5f), .y = wallPosition-.5f};
-                        SETUP_RAY_LINE();
-
-                        if (TC_CheckLineIntersect(rayLine, wallLine)) {
-                            wallFound = true;
-
-                            // Check if Wall Position is past the offset points for this side. If so, set face plane to North/South and adjust totalDist for that
-                            totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
-
-                            // North/South Plane
-                            facePlane = 0;
-                        } else {
-                            SETUP_Y_WALL();
+                            float wallPosition = (cameraPos.y + (totalDist.x - travelDist.x) * rayDir.y);
+                            Vector2 hitPosition = (Vector2){.x = mapCoord.x+(rayDir.x > 0 ? -.5f : .5f), .y = wallPosition-.5f};
+                            SETUP_RAY_LINE();
 
                             if (TC_CheckLineIntersect(rayLine, wallLine)) {
                                 wallFound = true;
 
-                                totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
+                                // Check if Wall Position is past the offset points for this side. If so, set face plane to North/South and adjust totalDist for that
+                                totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
 
-                                facePlane = 1;
+                                // North/South Plane
+                                facePlane = 0;
+                            } else {
+                                SETUP_Y_WALL();
+
+                                if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                                    wallFound = true;
+
+                                    totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
+
+                                    facePlane = 1;
+                                }
                             }
+                        } else {
+                            wallFound = true;
+                            facePlane = 0;
                         }
                     }
                 } else {
@@ -255,32 +260,36 @@ void TC_RenderWalls() {
                     totalDist.y += travelDist.y;
 
                     tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
-                    SETUP_PADDING()
-
                     if (TC_CHECKIFPAINTWALL(tileFlags)) {
-                        SETUP_Y_WALL();
+                        SETUP_PADDING();
+                        if (!isFullWall) {
+                            SETUP_Y_WALL();
 
-                        float wallPosition = (cameraPos.x + (totalDist.y - travelDist.y) * rayDir.x);
-                        Vector2 hitPosition = (Vector2){.x = wallPosition-.5f, .y = mapCoord.y+(rayDir.y > 0 ? -.5f : .5f)};
-                        SETUP_RAY_LINE();
-
-                        if (TC_CheckLineIntersect(rayLine, wallLine)) {
-                            wallFound = true;
-
-                            totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
-
-                            // East/West Plane
-                            facePlane = 1;
-                        } else {
-                            SETUP_X_WALL();
+                            float wallPosition = (cameraPos.x + (totalDist.y - travelDist.y) * rayDir.x);
+                            Vector2 hitPosition = (Vector2){.x = wallPosition-.5f, .y = mapCoord.y+(rayDir.y > 0 ? -.5f : .5f)};
+                            SETUP_RAY_LINE();
 
                             if (TC_CheckLineIntersect(rayLine, wallLine)) {
                                 wallFound = true;
 
-                                totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
+                                totalDist.y += travelDist.y * (.5f-fabs(rayDir.y > 0 ? eastWallOffset : westWallOffset));
 
-                                facePlane = 0;
+                                // East/West Plane
+                                facePlane = 1;
+                            } else {
+                                SETUP_X_WALL();
+
+                                if (TC_CheckLineIntersect(rayLine, wallLine)) {
+                                    wallFound = true;
+
+                                    totalDist.x += travelDist.x * (.5f-fabs(rayDir.x > 0 ? southWallOffset : northWallOffset));
+
+                                    facePlane = 0;
+                                }
                             }
+                        } else {
+                            wallFound = true;
+                            facePlane = 1;
                         }
                     }
                 }
