@@ -71,5 +71,8 @@ libcfw.lib: $(CFW_WINDOWS_OBJ)
 run: main_linux_out
 	@$(LINUX_OUT)
 
+runwin: main_windows_out
+	@wine $(WINDOWS_OUT)
+
 clean:
 	@rm -rf build

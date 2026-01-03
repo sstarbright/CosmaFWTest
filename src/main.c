@@ -95,19 +95,20 @@ void TC_UpdateJoy(float deltaTime) {
         trackMouse = false;
         SDL_SetRelativeMouseMode(SDL_FALSE);
     }
-    float playerX = gamePlayer.position.x;
-    float playerY = gamePlayer.position.y;
-    float turnX = gamePlayer.direction.x;
-    float turnY = gamePlayer.direction.y;
-    float planeX = gameCamera->cameraPlane.x;
-    float planeY = gameCamera->cameraPlane.y;
-    float lookAngle = gameCamera->cameraAngle;
-
-    moveSpeed = TC_KeyShift() ? 3.75f : 2.5f;
-    float moveDelta = deltaTime * moveSpeed;
 
     if (trackMouse) {
+        float playerX = gamePlayer.position.x;
+        float playerY = gamePlayer.position.y;
+        float turnX = gamePlayer.direction.x;
+        float turnY = gamePlayer.direction.y;
+        float planeX = gameCamera->cameraPlane.x;
+        float planeY = gameCamera->cameraPlane.y;
+        float lookAngle = gameCamera->cameraAngle;
+
+        moveSpeed = TC_KeyShift() ? 3.75f : 2.5f;
+        float moveDelta = deltaTime * moveSpeed;
         Sint32 mouseMotion = -TC_QueryMouseMotion();
+
         float rotSpeed = deltaTime * mouseSensitivity * mouseMotion;
 
         if (fabs(rotSpeed) > 0)
@@ -120,54 +121,54 @@ void TC_UpdateJoy(float deltaTime) {
             planeX = planeX * cos(rotSpeed) - planeY * sin(rotSpeed);
             planeY = oldPlaneX * sin(rotSpeed) + planeY * cos(rotSpeed);
         }
-    }
 
-    Vector2 targetPosition = (Vector2){.x = playerX, .y = playerY};
+        Vector2 targetPosition = (Vector2){.x = playerX, .y = playerY};
 
-    if(TC_KeyUp()) {
-        targetPosition.x += turnX * moveDelta;
-        targetPosition.y += turnY * moveDelta;
-        movedThisFrame = true;
-    }
-    if (TC_KeyDown())
-    {
-        targetPosition.x -= turnX * moveDelta;
-        targetPosition.y -= turnY * moveDelta;
-        movedThisFrame = true;
-    }
+        if(TC_KeyUp()) {
+            targetPosition.x += turnX * moveDelta;
+            targetPosition.y += turnY * moveDelta;
+            movedThisFrame = true;
+        }
+        if (TC_KeyDown())
+        {
+            targetPosition.x -= turnX * moveDelta;
+            targetPosition.y -= turnY * moveDelta;
+            movedThisFrame = true;
+        }
 
-    if(TC_KeyLeft()) {
-        targetPosition.x -= planeX * moveDelta;
-        targetPosition.y -= planeY * moveDelta;
-        movedThisFrame = true;
-    }
-    if (TC_KeyRight())
-    {
-        targetPosition.x += planeX * moveDelta;
-        targetPosition.y += planeY * moveDelta;
-        movedThisFrame = true;
-    }
+        if(TC_KeyLeft()) {
+            targetPosition.x -= planeX * moveDelta;
+            targetPosition.y -= planeY * moveDelta;
+            movedThisFrame = true;
+        }
+        if (TC_KeyRight())
+        {
+            targetPosition.x += planeX * moveDelta;
+            targetPosition.y += planeY * moveDelta;
+            movedThisFrame = true;
+        }
 
-    if (!TC_CheckTilesWithinCircle(targetPosition, gamePlayer.radius)) {
-        playerX = targetPosition.x;
-        playerY = targetPosition.y;
-    } else if (!TC_CheckTilesWithinCircle((Vector2){.x = targetPosition.x, .y = playerY}, gamePlayer.radius)) {
-        playerX = targetPosition.x;
-    } else if (!TC_CheckTilesWithinCircle((Vector2){.x = playerX, .y = targetPosition.y}, gamePlayer.radius)) {
-        playerY = targetPosition.y;
-    }
+        if (!TC_CheckTilesWithinCircle(targetPosition, gamePlayer.radius)) {
+            playerX = targetPosition.x;
+            playerY = targetPosition.y;
+        } else if (!TC_CheckTilesWithinCircle((Vector2){.x = targetPosition.x, .y = playerY}, gamePlayer.radius)) {
+            playerX = targetPosition.x;
+        } else if (!TC_CheckTilesWithinCircle((Vector2){.x = playerX, .y = targetPosition.y}, gamePlayer.radius)) {
+            playerY = targetPosition.y;
+        }
 
-    gamePlayer.position.x = playerX;
-    gamePlayer.position.y = playerY;
-    gamePlayer.direction.x = turnX;
-    gamePlayer.direction.y = turnY;
-    gameCamera->cameraPosition.x = playerX;
-    gameCamera->cameraPosition.y = playerY;
-    gameCamera->cameraDirection.x = turnX;
-    gameCamera->cameraDirection.y = turnY;
-    gameCamera->cameraPlane.x = planeX;
-    gameCamera->cameraPlane.y = planeY;
-    gameCamera->cameraAngle = lookAngle;
+        gamePlayer.position.x = playerX;
+        gamePlayer.position.y = playerY;
+        gamePlayer.direction.x = turnX;
+        gamePlayer.direction.y = turnY;
+        gameCamera->cameraPosition.x = playerX;
+        gameCamera->cameraPosition.y = playerY;
+        gameCamera->cameraDirection.x = turnX;
+        gameCamera->cameraDirection.y = turnY;
+        gameCamera->cameraPlane.x = planeX;
+        gameCamera->cameraPlane.y = planeY;
+        gameCamera->cameraAngle = lookAngle;
+    }
 }
 
 void CFW_OnUpdate(float deltaTime) {

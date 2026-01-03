@@ -84,10 +84,27 @@ void TC_RenderFloorCeiling() {
             bool reverseFloorU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
             bool reverseFloorV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
             bool swapFloorUV = (tileFlags & TILEFLAG_SWAPUV) > 0 && drawDecal;
-            if (drawDecal)
+
+            float floorU = (worldFloorCoord.x-(float)mapFloorCoord.x);
+            float floorV = (worldFloorCoord.y-(float)mapFloorCoord.y);
+
+            float floorNorth = 0.f;
+            float floorSouth = 0.f;
+            float floorWest = 0.f;
+            float floorEast = 0.f;
+            SETUP_PADDING(floorNorth, floorSouth, floorWest, floorEast)
+
+            floorNorth += .5f;
+            floorSouth += .5f;
+            floorWest += .5f;
+            floorEast += .5f;
+
+            if (drawDecal && floorU <= floorNorth && floorU >= floorSouth && floorV <= floorWest && floorV >= floorEast)
                 currentFloor = TC_GetMapTexture(TC_GetMapTextureID((int)mapFloorCoord.x, (int)mapFloorCoord.y));
             else
                 currentFloor = floorTexture;
+
+            Vector2i floorUV = (Vector2i){.x = (int)(currentFloor->w * floorU) & (currentFloor->w-1), .y = (int)(currentFloor->h * floorV) & (currentFloor->h-1)};
 
             Vector2i mapCeilCoord = (Vector2i){.x = (int)worldCeilCoord.x, .y = (int)worldCeilCoord.y};
             tileFlags = TC_GetMapFlags(mapCeilCoord.x, mapCeilCoord.y);
@@ -95,12 +112,27 @@ void TC_RenderFloorCeiling() {
             bool reverseCeilingU = (tileFlags & TILEFLAG_MIRRORU) > 0 && drawDecal;
             bool reverseCeilingV = (tileFlags & TILEFLAG_MIRRORV) > 0 && drawDecal;
             bool swapCeilingUV = (tileFlags & TILEFLAG_SWAPUV) > 0 && drawDecal;
-            if (drawDecal)
+
+            float ceilingU = (worldCeilCoord.x-(float)mapCeilCoord.x);
+            float ceilingV = (worldCeilCoord.y-(float)mapCeilCoord.y);
+
+            float ceilingNorth = 0.f;
+            float ceilingSouth = 0.f;
+            float ceilingWest = 0.f;
+            float ceilingEast = 0.f;
+            SETUP_PADDING(ceilingNorth, ceilingSouth, ceilingWest, ceilingEast)
+
+            ceilingNorth += .5f;
+            ceilingSouth += .5f;
+            ceilingWest += .5f;
+            ceilingEast += .5f;
+
+            if (drawDecal && ceilingU <= ceilingNorth && ceilingU >= ceilingSouth && ceilingV <= ceilingWest && ceilingV >= ceilingEast)
                 currentCeiling = TC_GetMapTexture(TC_GetMapTextureID((int)mapCeilCoord.x, (int)mapCeilCoord.y));
             else
                 currentCeiling = ceilingTexture;
+            Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
 
-            Vector2i floorUV = (Vector2i){.x = (int)(currentFloor->w * (worldFloorCoord.x-(float)mapFloorCoord.x)) & (currentFloor->w-1), .y = (int)(currentFloor->h * (worldFloorCoord.y-(float)mapFloorCoord.y)) & (currentFloor->h-1)};
             if (reverseFloorU)
                 floorUV.x = currentFloor->w-1-floorUV.x;
             if (reverseFloorV)
@@ -110,7 +142,7 @@ void TC_RenderFloorCeiling() {
                 floorUV.x = floorUV.y;
                 floorUV.y = oldValue;
             }
-            Vector2i ceilingUV = (Vector2i){.x = (int)(currentCeiling->w * (worldCeilCoord.x-(float)mapCeilCoord.x)) & (currentCeiling->w-1), .y = (int)(currentCeiling->h * (worldCeilCoord.y-(float)mapCeilCoord.y)) & (currentCeiling->h-1)};
+
             if (reverseCeilingU)
                 ceilingUV.x = currentCeiling->w-1-ceilingUV.x;
             if (reverseCeilingV)
@@ -235,7 +267,8 @@ void TC_RenderWalls() {
 
                     tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
                     if (TC_CHECKIFPAINTWALL(tileFlags)) {
-                        SETUP_PADDING();
+                        SETUP_PADDING(northWallOffset, southWallOffset, westWallOffset, eastWallOffset)
+                        isFullWall = (tileFlags & TILEFLAG_PADNORTH) == 0 && (tileFlags & TILEFLAG_PADSOUTH) == 0 && (tileFlags & TILEFLAG_PADEAST) == 0 && (tileFlags & TILEFLAG_PADWEST) == 0;
                         if (!isFullWall) {
                             SETUP_X_WALL();
 
@@ -273,7 +306,8 @@ void TC_RenderWalls() {
 
                     tileFlags = TC_GetMapFlags(mapCoord.x, mapCoord.y);
                     if (TC_CHECKIFPAINTWALL(tileFlags)) {
-                        SETUP_PADDING();
+                        SETUP_PADDING(northWallOffset, southWallOffset, westWallOffset, eastWallOffset)
+                        isFullWall = (tileFlags & TILEFLAG_PADNORTH) == 0 && (tileFlags & TILEFLAG_PADSOUTH) == 0 && (tileFlags & TILEFLAG_PADEAST) == 0 && (tileFlags & TILEFLAG_PADWEST) == 0;
                         if (!isFullWall) {
                             SETUP_Y_WALL();
 
