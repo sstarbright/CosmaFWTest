@@ -1,19 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://c5r1ldsxkxmmu"]
+[gd_scene load_steps=6 format=3 uid="uid://c5r1ldsxkxmmu"]
 
 [ext_resource type="Script" uid="uid://ckka33mjk711l" path="res://LevelEditor.gd" id="1_qnyfc"]
+[ext_resource type="PackedScene" uid="uid://w4ucbt0f23vk" path="res://MapGridColumn.tscn" id="2_uljig"]
+[ext_resource type="PackedScene" uid="uid://bbgwu2vdywvqc" path="res://TextureSlot.tscn" id="3_miuv6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qnyfc"]
 bg_color = Color(0.36, 0.36, 0.36, 1)
 
-[sub_resource type="Gradient" id="Gradient_fxd4i"]
-colors = PackedColorArray(0.0885599, 0.08855992, 0.08855987, 1, 0.4506483, 0.4506483, 0.45064825, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_qnyfc"]
-gradient = SubResource("Gradient_fxd4i")
-width = 16
-height = 16
-fill = 2
-fill_from = Vector2(0.51282054, 0.491453)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uljig"]
+bg_color = Color(0.2051174, 0.20511746, 0.20511732, 1)
 
 [node name="LevelEditor" type="Control"]
 layout_mode = 3
@@ -64,30 +59,18 @@ horizontal_alignment = 2
 vertical_alignment = 1
 autowrap_mode = 1
 
-[node name="HSplitContainer" type="HSplitContainer" parent="PanelContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-theme_override_styles/split_bar_background = SubResource("StyleBoxFlat_qnyfc")
-split_offset = 535
-
-[node name="LevelColumn" type="VBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Header" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn"]
-custom_minimum_size = Vector2(0, 40)
+[node name="Header" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
 alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/Header"]
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/Header"]
 layout_mode = 2
 size_flags_horizontal = 4
 alignment = 2
 
-[node name="Label2" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/Header/HBoxContainer"]
+[node name="Label2" type="Label" parent="PanelContainer/VBoxContainer/Header/HBoxContainer"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -95,7 +78,7 @@ text = "Size:"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/Header/HBoxContainer"]
+[node name="SpinBox" type="SpinBox" parent="PanelContainer/VBoxContainer/Header/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 min_value = 1.0
@@ -104,7 +87,7 @@ value = 3.0
 rounded = true
 alignment = 1
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/Header/HBoxContainer"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/Header/HBoxContainer"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -112,7 +95,7 @@ text = "x"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SpinBox2" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/Header/HBoxContainer"]
+[node name="SpinBox2" type="SpinBox" parent="PanelContainer/VBoxContainer/Header/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 min_value = 1.0
@@ -121,158 +104,239 @@ value = 3.0
 rounded = true
 alignment = 1
 
-[node name="MapGrid" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn"]
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EditorTabs" type="TabContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 20.0
+current_tab = 1
+
+[node name="Textures" type="HSplitContainer" parent="PanelContainer/VBoxContainer/EditorTabs"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+theme_override_styles/split_bar_background = SubResource("StyleBoxFlat_qnyfc")
+split_offset = 535
+metadata/_tab_index = 0
+
+[node name="MapGrid" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Textures"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 30.85
 alignment = 1
 
-[node name="ExtraTextures" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn"]
-layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
-
-[node name="FloorTexture" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/FloorTexture"]
-custom_minimum_size = Vector2(75, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Floor"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ColorPickerButton" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/FloorTexture"]
-layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Floor Color"
-
-[node name="CeilingTexture" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/CeilingTexture"]
-custom_minimum_size = Vector2(75, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Ceiling"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ColorPickerButton" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/CeilingTexture"]
-layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Ceiling Color"
-
-[node name="SkyboxTexture" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/SkyboxTexture"]
-custom_minimum_size = Vector2(75, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Skybox"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Button3" type="Button" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/ExtraTextures/SkyboxTexture"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-tooltip_text = "Skybox Texture"
-icon = SubResource("GradientTexture2D_qnyfc")
-flat = true
-icon_alignment = 1
-expand_icon = true
-
-[node name="PostProcessOptions" type="HBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn"]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-text = "Fog"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ColorPickerButton" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Fog Color"
-edit_alpha = false
-
-[node name="SpinBox" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-tooltip_text = "Fog Start Position
-Try negative values for more intense colors!"
-step = 0.01
-alignment = 1
-custom_arrow_step = 1.0
-
-[node name="SpinBox2" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-tooltip_text = "Fog End Position
-The closer this is to Fog Start, the thicker the fog"
-step = 0.01
-value = 8.0
-alignment = 1
-custom_arrow_step = 1.0
-
-[node name="Label2" type="Label" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-text = "Corner"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ColorPickerButton2" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-size_flags_horizontal = 3
-tooltip_text = "Corner Color"
-edit_alpha = false
-
-[node name="SpinBox3" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-tooltip_text = "Corner Sharpness
-Lower values make for a softer corner"
-step = 0.01
-value = 2.0
-alignment = 1
-custom_arrow_step = 1.0
-
-[node name="SpinBox4" type="SpinBox" parent="PanelContainer/VBoxContainer/HSplitContainer/LevelColumn/PostProcessOptions"]
-layout_mode = 2
-tooltip_text = "Corner Weakness
-Lower values make the effect more powerful"
-step = 0.01
-value = 0.1
-alignment = 1
-custom_arrow_step = 1.0
-
-[node name="TextureColumn" type="ScrollContainer" parent="PanelContainer/VBoxContainer/HSplitContainer"]
+[node name="MapGridColumn" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
 layout_mode = 2
 
-[node name="TextureList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/HSplitContainer/TextureColumn"]
+[node name="MapGridColumn2" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
+layout_mode = 2
+
+[node name="MapGridColumn3" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
+layout_mode = 2
+
+[node name="TextureColumn" type="ScrollContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Textures"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_uljig")
+
+[node name="TextureList" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/TextureColumn"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 13.9
 
-[node name="Button" type="Button" parent="PanelContainer/VBoxContainer/HSplitContainer/TextureColumn/TextureList"]
+[node name="TextureSlot" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/TextureColumn/TextureList" instance=ExtResource("3_miuv6")]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/TextureColumn/TextureList"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "+"
+
+[node name="Tile Properties" type="HSplitContainer" parent="PanelContainer/VBoxContainer/EditorTabs"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+theme_override_styles/split_bar_background = SubResource("StyleBoxFlat_qnyfc")
+split_offset = 535
+metadata/_tab_index = 1
+
+[node name="MapGrid" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 30.85
+alignment = 1
+
+[node name="MapGridColumn" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
+layout_mode = 2
+
+[node name="MapGridColumn2" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
+layout_mode = 2
+
+[node name="MapGridColumn3" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
+layout_mode = 2
+
+[node name="Control" type="ColorRect" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties"]
+custom_minimum_size = Vector2(290, 0)
+layout_mode = 2
+color = Color(0.21950102, 0.21950102, 0.21950093, 1)
+
+[node name="Properties" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 11.0
+offset_top = 13.0
+offset_right = -13.0
+offset_bottom = -17.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+text = "Has Collision?"
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/HBoxContainer"]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="RenderMode" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/RenderMode"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+text = "Render Mode"
+
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/RenderMode"]
+layout_mode = 2
+alignment = 1
+selected = 0
+item_count = 4
+popup/item_0/text = "None"
+popup/item_0/id = 0
+popup/item_1/text = "Wall"
+popup/item_1/id = 1
+popup/item_2/text = "Floor"
+popup/item_2/id = 2
+popup/item_3/text = "Ceiling"
+popup/item_3/id = 3
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+text = "UV Settings"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Mirror"
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "U"
+
+[node name="CheckBox2" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "V"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Swap U and V"
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+text = "Shape Settings"
+
+[node name="Control" type="Control" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.5
+offset_top = -13.0
+offset_right = 48.5
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Pad North"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2"]
+layout_mode = 2
+alignment = 1
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/HBoxContainer"]
+layout_mode = 2
+text = "Pad West"
+
+[node name="Panel" type="ColorRect" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+color = Color(0.16206557, 0.1620656, 0.16206557, 1)
+
+[node name="CheckBox2" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/HBoxContainer"]
+layout_mode = 2
+text = "Pad East"
+
+[node name="Control2" type="Control" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/Control2"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.5
+offset_top = -13.0
+offset_right = 48.5
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Pad South"
 
 [node name="OpenMapFile" type="FileDialog" parent="."]
 oversampling_override = 1.0
