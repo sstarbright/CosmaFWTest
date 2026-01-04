@@ -1,7 +1,7 @@
 extends Control
 
-@onready var tool_bar_file : PopupMenu = $PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/MenuButton.get_popup()
-@onready var loaded_file_label : Label = $PanelContainer/VBoxContainer/PanelContainer/HBoxContainer/Label
+@onready var tool_bar_file : PopupMenu = $PanelContainer/VBoxContainer/Header/MenuButton.get_popup()
+@onready var loaded_file_label : Label = $PanelContainer/VBoxContainer/Header/Label
 @onready var new_file_dialog : FileDialog = $NewMapFile
 @onready var open_file_dialog : FileDialog = $OpenMapFile
 @onready var save_as_file_dialog : FileDialog = $SaveAsMapFile

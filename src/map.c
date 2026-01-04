@@ -14,29 +14,16 @@ int textureMap[9][9] =
     {0,0,0,0,0,0,0,0,0}
 };
 
-int collisionMap[9][9] =
-{
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0}
-};
-
 int flagMap[9][9] =
 {
     {0,0,0,0,0,0,0,0,0},
-    {0,81,82,83,0,0,0,0,0},
-    {0,33,34,35,0,0,0,0,0},
-    {0,129,130,131,0,0,0,0,0},
-    {0,257,258,259,0,0,0,0,0},
-    {0,97,98,99,0,0,0,0,0},
-    {0,385,386,387,0,0,0,0,0},
-    {0,481,482,483,0,0,0,0,0},
+    {0,5,5,5,0,0,0,0,0},
+    {0,5,5,5,0,0,0,0,0},
+    {0,2,2,2,0,0,0,0,0},
+    {0,2,2,2,0,0,0,0,0},
+    {0,2,2,2,0,0,0,0,0},
+    {0,5,5,5,0,0,0,0,0},
+    {0,5,5,5,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0}
 };
 
@@ -57,10 +44,6 @@ void TC_ReverseMap() {
             int swapInt = textureMap[x][y];
             textureMap[x][y] = textureMap[currentMapSize.x-x-1][y];
             textureMap[currentMapSize.x-x-1][y] = swapInt;
-
-            swapInt = collisionMap[x][y];
-            collisionMap[x][y] = collisionMap[currentMapSize.x-x-1][y];
-            collisionMap[currentMapSize.x-x-1][y] = swapInt;
 
             swapInt = flagMap[x][y];
             flagMap[x][y] = flagMap[currentMapSize.x-x-1][y];
@@ -110,8 +93,8 @@ int TC_GetMapFlags(int x, int y) {
 }
 
 int TC_GetMapCollision(int x, int y) {
-    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y)
-        return collisionMap[x][y];
+    if (x >= 0 && y >= 0 && x < currentMapSize.x && y < currentMapSize.y && (flagMap[x][y] & TILEFLAG_COLLIDE) > 0)
+        return 1;
     else
         return 0;
 }

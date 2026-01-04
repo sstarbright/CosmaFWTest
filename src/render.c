@@ -19,8 +19,8 @@ SDL_Rect viewportRect;
 RayCamera* camera;
 
 // Fog Rendering Data
-float fog_start = -2.f;
-float fog_end = 4.f;
+float fog_start = -1.f;
+float fog_end = 5.f;
 CFW_Color fog_color = (CFW_Color){.r = 20, .g = 12, .b = 1};
 
 // AO Rendering Data
@@ -179,13 +179,11 @@ void TC_RenderFloorCeiling() {
         }
 
         SDL_SetRenderDrawBlendMode(mainRenderer, SDL_BLENDMODE_BLEND);
-        float floorDistance = (1.f-fabs(((float)y)/((float)screenSize.y)*2.f-1.f)) * FAR_PLANE_DISTANCE;
-        float fogStrength = (fog_end - floorDistance)/(fog_end-fog_start);
 
-        float floorFogStrength = fogStrength - verticalFogOffset;
+        float floorFogStrength = (fog_end - lineFloorDistance)/(fog_end-fog_start);
         floorFogStrength = clampFloat(floorFogStrength, 0.f, 1.f);
         floorFogStrength = invertFloat(floorFogStrength);
-        float ceilFogStrength = fogStrength + verticalFogOffset;
+        float ceilFogStrength = (fog_end - lineCeilDistance)/(fog_end-fog_start);
         ceilFogStrength = clampFloat(ceilFogStrength, 0.f, 1.f);
         ceilFogStrength = invertFloat(ceilFogStrength);
 
