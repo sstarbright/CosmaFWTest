@@ -30,6 +30,7 @@ texture = SubResource("GradientTexture2D_cjwyt")
 expand_mode = 1
 
 [node name="Button" type="Button" parent="."]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5

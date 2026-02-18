@@ -1,52 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://w4ucbt0f23vk"]
+[gd_scene format=3 uid="uid://w4ucbt0f23vk"]
 
-[sub_resource type="Gradient" id="Gradient_fxd4i"]
-colors = PackedColorArray(0.0885599, 0.08855992, 0.08855987, 1, 0.4506483, 0.4506483, 0.45064825, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_k4bpf"]
-gradient = SubResource("Gradient_fxd4i")
-width = 16
-height = 16
-fill = 2
-fill_from = Vector2(0.51282054, 0.491453)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_mahwy"]
-gradient = SubResource("Gradient_fxd4i")
-width = 16
-height = 16
-fill = 2
-fill_from = Vector2(0.51282054, 0.491453)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_iuob1"]
-gradient = SubResource("Gradient_fxd4i")
-width = 16
-height = 16
-fill = 2
-fill_from = Vector2(0.51282054, 0.491453)
-
-[node name="MapGridColumn" type="VBoxContainer"]
+[node name="Column" type="VBoxContainer"]
+offset_right = 8.0
+offset_bottom = 32.0
 size_flags_horizontal = 3
-
-[node name="Button" type="Button" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_k4bpf")
-flat = true
-icon_alignment = 1
-expand_icon = true
-
-[node name="Button2" type="Button" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_mahwy")
-flat = true
-icon_alignment = 1
-expand_icon = true
-
-[node name="Button3" type="Button" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-icon = SubResource("GradientTexture2D_iuob1")
-flat = true
-icon_alignment = 1
-expand_icon = true

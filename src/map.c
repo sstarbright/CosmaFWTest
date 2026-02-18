@@ -4,13 +4,13 @@
 int textureMap[9][9] =
 {
     {0,0,0,0,0,0,0,0,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
-    {0,1,1,1,0,1,1,1,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0}
 };
 
@@ -56,9 +56,8 @@ void TC_InitializeMap() {
     TC_ReverseMap();
     mapTextures = malloc(sizeof(void*)*2);
     mapTextures[0] = CFW_CreateTexture("assets/textures/wall1.png");
-    mapTextures[1] = CFW_CreateTexture("assets/textures/water.png");
 
-    for (int x = 0; x < 2; x++) {
+    for (int x = 0; x < 1; x++) {
         CFW_ReqTexture(mapTextures[x]);
         SDL_SetTextureScaleMode(mapTextures[x]->texture, SDL_ScaleModeNearest);
     }

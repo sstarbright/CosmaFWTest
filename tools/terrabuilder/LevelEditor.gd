@@ -1,3 +1,4 @@
+class_name LevelEditor
 extends Control
 
 @onready var tool_bar_file : PopupMenu = $PanelContainer/VBoxContainer/Header/MenuButton.get_popup()
@@ -10,6 +11,7 @@ extends Control
 signal finished_not_saved
 
 func _ready() -> void:
+	LevelEditorData.loaded_map_data = LevelData.new(self, "")
 	tool_bar_file.id_pressed.connect(file_menu_selected)
 	get_tree().set_auto_accept_quit(false)
 	get_window().close_requested.connect(main_window_closed)

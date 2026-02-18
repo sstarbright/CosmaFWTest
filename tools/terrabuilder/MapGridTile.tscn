@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://db1e4nsagd3va"]
+
+[sub_resource type="Gradient" id="Gradient_fxd4i"]
+colors = PackedColorArray(0.0885599, 0.08855992, 0.08855987, 1, 0.4506483, 0.4506483, 0.45064825, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_k4bpf"]
+gradient = SubResource("Gradient_fxd4i")
+width = 16
+height = 16
+fill = 2
+fill_from = Vector2(0.51282054, 0.491453)
+
+[node name="Tile" type="Button"]
+texture_filter = 1
+size_flags_vertical = 3
+icon = SubResource("GradientTexture2D_k4bpf")
+flat = true
+icon_alignment = 1
+expand_icon = true

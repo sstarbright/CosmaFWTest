@@ -20,7 +20,7 @@ RayCamera* camera;
 
 // Fog Rendering Data
 float fog_start = -1.f;
-float fog_end = 5.f;
+float fog_end = 2.5f;
 CFW_Color fog_color = (CFW_Color){.r = 20, .g = 12, .b = 1};
 
 // AO Rendering Data

@@ -1,7 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://c5r1ldsxkxmmu"]
+[gd_scene load_steps=7 format=3 uid="uid://c5r1ldsxkxmmu"]
 
 [ext_resource type="Script" uid="uid://ckka33mjk711l" path="res://LevelEditor.gd" id="1_qnyfc"]
-[ext_resource type="PackedScene" uid="uid://w4ucbt0f23vk" path="res://MapGridColumn.tscn" id="2_uljig"]
 [ext_resource type="PackedScene" uid="uid://bbgwu2vdywvqc" path="res://TextureSlot.tscn" id="3_miuv6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qnyfc"]
@@ -10,17 +9,18 @@ bg_color = Color(0.36, 0.36, 0.36, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uljig"]
 bg_color = Color(0.2051174, 0.20511746, 0.20511732, 1)
 
-[sub_resource type="Gradient" id="Gradient_fxd4i"]
+[sub_resource type="Gradient" id="Gradient_uljig"]
 colors = PackedColorArray(0.0885599, 0.08855992, 0.08855987, 1, 0.4506483, 0.4506483, 0.45064825, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_uljig"]
-gradient = SubResource("Gradient_fxd4i")
+gradient = SubResource("Gradient_uljig")
 width = 16
 height = 16
 fill = 2
 fill_from = Vector2(0.51282054, 0.491453)
 
 [node name="LevelEditor" type="Control"]
+custom_minimum_size = Vector2(840, 640)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -137,10 +137,9 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 20.0
 tab_alignment = 1
-current_tab = 2
+current_tab = 0
 
 [node name="Textures" type="HSplitContainer" parent="PanelContainer/VBoxContainer/EditorTabs"]
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
@@ -153,15 +152,6 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 30.85
 alignment = 1
-
-[node name="MapGridColumn" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn2" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn3" parent="PanelContainer/VBoxContainer/EditorTabs/Textures/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
 
 [node name="TextureColumn" type="ScrollContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Textures"]
 layout_mode = 2
@@ -195,15 +185,6 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 30.85
 alignment = 1
-
-[node name="MapGridColumn" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn2" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn3" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
 
 [node name="Control" type="ColorRect" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties"]
 custom_minimum_size = Vector2(290, 0)
@@ -342,6 +323,14 @@ custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
 color = Color(0.16206557, 0.1620656, 0.16206557, 1)
 
+[node name="Panel2" type="ColorRect" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
 [node name="CheckBox2" type="CheckBox" parent="PanelContainer/VBoxContainer/EditorTabs/Tile Properties/Control/Properties/VBoxContainer2/HBoxContainer"]
 layout_mode = 2
 text = "Pad East"
@@ -366,6 +355,7 @@ grow_vertical = 2
 text = "Pad South"
 
 [node name="Settings" type="HSplitContainer" parent="PanelContainer/VBoxContainer/EditorTabs"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 8
@@ -378,15 +368,6 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 30.85
 alignment = 1
-
-[node name="MapGridColumn" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn2" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
-
-[node name="MapGridColumn3" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/MapGrid" instance=ExtResource("2_uljig")]
-layout_mode = 2
 
 [node name="Control" type="ColorRect" parent="PanelContainer/VBoxContainer/EditorTabs/Settings"]
 custom_minimum_size = Vector2(290, 0)
@@ -405,6 +386,29 @@ offset_bottom = -17.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
+
+[node name="ALSettings" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/ALSettings"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/ALSettings/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 2
+text = "Ambient Light"
+
+[node name="VSeparator" type="VSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/ALSettings/HBoxContainer"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/ALSettings/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator4" type="HSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings"]
+layout_mode = 2
 
 [node name="FogSettings" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings"]
 layout_mode = 2
@@ -453,7 +457,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 2
-text = "Ambient Occlusion"
+text = "Corners"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/AOSettings"]
 layout_mode = 2
@@ -509,6 +513,7 @@ text = "Floor
 vertical_alignment = 1
 
 [node name="Button" type="Button" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/Textures/HBoxContainer"]
+texture_filter = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.79
@@ -530,6 +535,7 @@ text = "Ceiling
 vertical_alignment = 1
 
 [node name="Button" type="Button" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/Textures/HBoxContainer2"]
+texture_filter = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.79
@@ -551,6 +557,7 @@ text = "Sky
 vertical_alignment = 1
 
 [node name="Button" type="Button" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/Textures/HBoxContainer3"]
+texture_filter = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.79
@@ -558,6 +565,9 @@ icon = SubResource("GradientTexture2D_uljig")
 flat = true
 icon_alignment = 1
 expand_icon = true
+
+[node name="HSeparator3" type="HSeparator" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings"]
+layout_mode = 2
 
 [node name="SpawnSetting" type="VBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings"]
 layout_mode = 2
@@ -577,6 +587,7 @@ text = "X"
 
 [node name="SpinBox" type="SpinBox" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/SpawnSetting/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 rounded = true
 
 [node name="Label2" type="Label" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/SpawnSetting/HBoxContainer"]
@@ -585,6 +596,7 @@ text = "Y"
 
 [node name="SpinBox2" type="SpinBox" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/SpawnSetting/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 rounded = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="PanelContainer/VBoxContainer/EditorTabs/Settings/Control/Settings/SpawnSetting"]
@@ -600,8 +612,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 min_value = -100.0
 step = 0.01
-value = 4.0
-custom_arrow_step = 0.5
+suffix = "deg"
+custom_arrow_step = 10.0
 
 [node name="Footer" type="ColorRect" parent="PanelContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 35)
