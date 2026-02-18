@@ -1,0 +1,3 @@
+[submodule "CosmaFW"]
+	path = CosmaFW
+	url = https://github.com/sstarbright/CosmaFW.git
